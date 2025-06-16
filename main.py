@@ -1,129 +1,124 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
+import io
 
-st.title("Análisis de Datos por Docente")
+st.set_page_config(layout="wide")
 
-# 1. Subir archivo desde el escritorio
-uploaded_file = st.file_uploader("Carga el archivo Excel con los datos de estudiantes", type=[".xlsx"])
+st.markdown("""
+# Registro de los aspirantes al ingreso a las diversas carreras del Instituto Tecnológico de Colima
+**Elaborado por:** Dra. Elena Elsa Bricio-Barrios, Dr. Santiago Arceo Díaz, Psicóloga Martha Cecilia Ramírez Guzmán
+""")
+
+# Subir archivo
+uploaded_file = st.file_uploader("Sube el archivo Excel con los datos", type=["xlsx"])
 
 if uploaded_file:
     df = pd.read_excel(uploaded_file)
 
-    # 2. Solicitar homoclave del docente
-    homoclave = st.text_input("Introduce la homoclave del docente (ej. PROF1003):").strip().upper()
-
+    homoclave = st.text_input("Introduce la homoclave del docente (ej. PROF1003)").strip().upper()
     if homoclave:
         df_docente = df[df['Homoclave del docente'].str.upper() == homoclave]
 
         if df_docente.empty:
             st.warning("No se encontraron datos para esa homoclave.")
         else:
-            st.success(f"Datos filtrados para el docente con homoclave: {homoclave}")
+            st.subheader(f"Datos filtrados para la homoclave: {homoclave}")
             st.dataframe(df_docente)
 
-            # 4. Agrupar por 'Bachillerato'
-            st.subheader("Distribución por Bachillerato")
-            bachillerato_group = df_docente['Bachillerato'].value_counts().reset_index()
-            bachillerato_group.columns = ['Bachillerato', 'Cantidad']
-            st.dataframe(bachillerato_group)
+            if st.radio("¿Desea realizar una búsqueda personalizada?", ["No", "Sí"]) == "Sí":
+                nombre_col = [col for col in df_docente.columns if "Nombre" in col][0]
+                nombre_estudiante = st.text_input(f"Introduce el nombre del estudiante (columna '{nombre_col}')").strip()
+                if nombre_estudiante:
+                    df_estudiante = df_docente[df_docente[nombre_col].str.lower() == nombre_estudiante.lower()]
+                    if df_estudiante.empty:
+                        st.warning("No se encontró al estudiante.")
+                    else:
+                        st.subheader(f"Datos del estudiante {nombre_estudiante}")
+                        st.dataframe(df_estudiante.T)
 
-            # 5. Promedio Bachillerato por rangos
-            st.subheader("Distribución por rangos de Promedio de Bachillerato")
-            bins = [6.9, 7.9, 8.9, 9.9, 10.1]
-            labels = ['7.0 - 7.9', '8.0 - 8.9', '9.0 - 9.9', '10.0']
-            df_docente['Rango Promedio'] = pd.cut(df_docente['Promedio Bachillerato'], bins=bins, labels=labels, right=True)
-            promedio_group = df_docente['Rango Promedio'].value_counts().sort_index().reset_index()
-            promedio_group.columns = ['Rango de Promedio', 'Cantidad']
-            st.dataframe(promedio_group)
-
-            # 6. Agrupar por Alergias
-            st.subheader("Distribución por tipo de Alergias")
-            alergias_group = df_docente['Alergias'].value_counts(dropna=False).reset_index()
-            alergias_group.columns = ['Alergias', 'Cantidad']
-            st.dataframe(alergias_group)
-
-            # 7. Agrupar por Padecimientos
-            st.subheader("Distribución por tipo de Padecimientos")
-            padecimientos_group = df_docente['Padecimientos'].value_counts(dropna=False).reset_index()
-            padecimientos_group.columns = ['Padecimientos', 'Cantidad']
-            st.dataframe(padecimientos_group)
-
-            # 8. Variables categóricas adicionales
-            columnas_extra = [
-                'Sexo', '¿Actualmente trabaja?', 'Lugar donde vive', '¿Vive con?', 'Grupo sanguíneo',
-                '¿Cuenta con un lugar adecuado para estudiar en casa?',
-                '¿Tiene acceso constante a internet y computadora?',
-                '¿Se ha sentido triste o desmotivado frecuentemente en las últimas dos semanas?',
-                '¿A quién acudiría si tuviera un problema emocional o académico?',
-                '¿Ha recibido atención psicológica en el último año?',
-                '¿Quién lo(a) apoya económicamente durante sus estudios?',
-                '¿Cuenta con personas cercanas que lo(a) motivan a continuar con su carrera?'
-            ]
-
-            for col in columnas_extra:
-                if col in df_docente.columns:
-                    st.subheader(f"Distribución por {col}")
-                    grupo = df_docente[col].value_counts(dropna=False).reset_index()
-                    grupo.columns = [col, 'Cantidad']
-                    st.dataframe(grupo)
-
-    # 9. Boxplots y detección de datos atípicos
-    st.header("Boxplots y valores atípicos")
-    columnas_numericas = [
-        'Promedio Bachillerato',
-        'Edad',
-        '¿Cuál fue su promedio final en el último ciclo escolar?'
-    ]
-    for col in columnas_numericas:
-        if col in df.columns:
-            st.subheader(f"Análisis para: {col}")
-            fig, ax = plt.subplots()
-            ax.boxplot(df[col].dropna(), vert=False)
-            ax.set_title(f'Boxplot de: {col}')
-            ax.set_xlabel(col)
-            st.pyplot(fig)
-
-            Q1 = df[col].quantile(0.25)
-            Q3 = df[col].quantile(0.75)
-            IQR = Q3 - Q1
-            lower = Q1 - 1.5 * IQR
-            upper = Q3 + 1.5 * IQR
-            outliers = df[(df[col] < lower) | (df[col] > upper)]
-
-            if not outliers.empty:
-                st.warning(f"Se encontraron {len(outliers)} dato(s) atípico(s) en {col}:")
-                columnas_a_mostrar = ['Nombre', col] if 'Nombre' in df.columns else [col]
-                st.dataframe(outliers[columnas_a_mostrar])
             else:
-                st.info(f"No se encontraron datos atípicos en {col}.")
+                columnas_categoricas = [
+                    "Edad",
+                    "¿Actualmente trabaja?",
+                    "Lugar donde vive",
+                    "Bachillerato",
+                    "Tiempo de desplazamiento",
+                    "¿Vive con?",
+                    "¿Quién lo(a) apoya económicamente durante sus estudios?"
+                ]
 
-    # 10. Barras apiladas normalizadas
-    st.header("Barras Apiladas Normalizadas")
-    columnas_categoricas = [
-        '¿Actualmente trabaja?',
-        'Lugar donde vive',
-        'Bachillerato',
-        '¿A quién acudiría si tuviera un problema emocional o académico?',
-        '¿Quién lo(a) apoya económicamente durante sus estudios?'
-    ]
+                for col in columnas_categoricas:
+                    st.markdown(f"### Distribución: {col}")
+                    if col == 'Promedio Bachillerato':
+                        bins = np.arange(6.0, 10.0, 0.5)
+                        etiquetas = [f'{i:.1f} - {i + 0.4:.1f}' for i in bins[:-1]]
+                        df_docente['Rango Promedio'] = pd.cut(df_docente[col], bins=bins, labels=etiquetas)
+                        conteo = df_docente['Rango Promedio'].value_counts().sort_index()
+                        columna_a_graficar = 'Rango Promedio'
+                    else:
+                        conteo = df_docente[col].value_counts(dropna=False)
+                        columna_a_graficar = col
 
-    for columna in columnas_categoricas:
-        if columna in df.columns:
-            conteo = df[columna].value_counts(dropna=False)
-            porcentaje = (conteo / conteo.sum()) * 100
-            categorias = porcentaje.index.tolist()
+                    porcentaje = (conteo / conteo.sum()) * 100
+                    categorias = porcentaje.index.tolist()
 
-            fig, ax = plt.subplots(figsize=(10, 2))
-            left = 0
-            for cat in categorias:
-                val = porcentaje[cat]
-                ax.barh(0, val, left=left, label=str(cat))
-                left += val
+                    fig, ax = plt.subplots(figsize=(10, 2))
+                    left = 0
+                    for cat in categorias:
+                        val = porcentaje[cat]
+                        n = conteo[cat]
+                        label = f"{cat} ({n})"
+                        ax.barh(0, val, left=left, label=label)
+                        left += val
 
-            ax.set_xlim(0, 100)
-            ax.set_xlabel('Porcentaje (%)')
-            ax.set_yticks([])
-            ax.set_title(f'Distribución: {columna}')
-            ax.legend(title='Respuesta', bbox_to_anchor=(1.05, 1), loc='upper left')
-            st.pyplot(fig)
+                    ax.set_xlim(0, 100)
+                    ax.set_xlabel('Porcentaje (%)')
+                    ax.set_yticks([])
+                    ax.legend(title='Respuesta', bbox_to_anchor=(1.05, 1), loc='upper left')
+                    st.pyplot(fig)
+
+                columnas_a_evaluar = [
+                    'Edad',
+                    'Promedio Bachillerato',
+                    '¿Cuál fue su promedio final en el último ciclo escolar?'
+                ]
+
+                nombre_col = [col for col in df_docente.columns if "Nombre" in col][0]
+
+                for col in columnas_a_evaluar:
+                    if col in df_docente.columns:
+                        st.markdown(f"### Distribución de {col}")
+                        datos = df_docente[[nombre_col, col]].dropna()
+                        Q1 = datos[col].quantile(0.25)
+                        Q3 = datos[col].quantile(0.75)
+                        IQR = Q3 - Q1
+                        lower = Q1 - 1.5 * IQR
+                        upper = Q3 + 1.5 * IQR
+
+                        if col == 'Edad':
+                            bins = np.arange(17, 22, 2)
+                        elif 'promedio' in col.lower():
+                            bins = np.arange(6.0, 10.0, 0.5)
+                        else:
+                            bins = 10
+
+                        df_docente['Rango_' + col] = pd.cut(df_docente[col], bins=bins)
+                        conteo_barras = df_docente['Rango_' + col].value_counts().sort_index()
+
+                        fig, ax = plt.subplots(figsize=(8, 4))
+                        conteo_barras.plot(kind='bar', ax=ax, color='skyblue')
+                        ax.set_ylabel('Número de estudiantes')
+                        ax.set_xlabel('Rangos')
+                        ax.grid(axis='y')
+                        st.pyplot(fig)
+
+                        outliers = datos[(datos[col] < lower) | (datos[col] > upper)]
+
+                        if not outliers.empty:
+                            st.warning(f"⚠️ Se encontraron {len(outliers)} dato(s) atípico(s) en '{col}':")
+                            for _, row in outliers.iterrows():
+                                st.text(f"- {row[nombre_col]}: {col} = {row[col]}")
+                        else:
+                            st.success(f"✅ No se encontraron datos atípicos en '{col}'.")
