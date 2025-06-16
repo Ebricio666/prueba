@@ -7,8 +7,8 @@ import io
 st.set_page_config(layout="wide")
 
 st.markdown("""
-# Registro de los aspirantes al ingreso a las diversas carreras del Instituto Tecnológico de Colima
-**Elaborado por:** Dra. Elena Elsa Bricio-Barrios, Dr. Santiago Arceo Díaz, Psicóloga Martha Cecilia Ramírez Guzmán
+# Reporte gráfico de datos demográficos y áreas de oportunidad de los aspirantes al ingreso a las diversas carreras del Instituto Tecnológico de Colima 2025
+**Elaborado por:** Dra. Elena Elsa Bricio-Barrios, Dr. Santiago Arceo-Díaz, Psicóloga Martha Cecilia Ramírez-Guzmán
 """)
 
 # Subir archivo
@@ -40,6 +40,7 @@ if uploaded_file:
 
             else:
                 columnas_categoricas = [
+                    "Sexo",
                     "Edad",
                     "¿Actualmente trabaja?",
                     "Lugar donde vive",
