@@ -7,7 +7,7 @@ import io
 st.set_page_config(layout="wide")
 
 st.markdown("""
-# Reporte gráfico de datos demográficos y áreas de oportunidad de los aspirantes al ingreso a las diversas carreras del Instituto Tecnológico de Colima 2025
+# Reporte gráfico de datos demográficos y áreas de oportunidad de los aspirantes al ingreso a las diversas carreras del Instituto Tecnológico de Colima 2025  
 **Elaborado por:** Dra. Elena Elsa Bricio-Barrios, Dr. Santiago Arceo-Díaz, Psicóloga Martha Cecilia Ramírez-Guzmán
 """)
 
@@ -27,29 +27,29 @@ if uploaded_file:
             st.subheader(f"Datos filtrados para la homoclave: {homoclave}")
             st.dataframe(df_docente)
 
-                    if st.radio("¿Desea realizar una búsqueda personalizada?", ["No", "Sí"]) == "Sí":
-            nombre_col = [col for col in df_docente.columns if "Nombre" in col][0]
-            nombre_estudiante = st.text_input(f"Introduce el nombre del estudiante (columna '{nombre_col}')").strip()
-            if nombre_estudiante:
-                df_estudiante = df_docente[df_docente[nombre_col].str.lower() == nombre_estudiante.lower()]
-                if df_estudiante.empty:
-                    st.warning("No se encontró al estudiante.")
-                else:
-                    st.subheader(f"Datos del estudiante: {nombre_estudiante}")
-                    st.dataframe(df_estudiante)
-        else:
-            columnas_categoricas = [
-                "Sexo",
-                "Edad",
-                "¿Actualmente trabaja?",
-                "Lugar donde vive",
-                "Bachillerato",
-                "Tiempo de desplazamiento",
-                "¿Cuántas horas al día puede dedicar al estudio fuera del aula?",
-                "¿Vive con?",
-                "¿Quién lo(a) apoya económicamente durante sus estudios?"
-            ]
-          
+            if st.radio("¿Desea realizar una búsqueda personalizada?", ["No", "Sí"]) == "Sí":
+                nombre_col = [col for col in df_docente.columns if "Nombre" in col][0]
+                nombre_estudiante = st.text_input(f"Introduce el nombre del estudiante (columna '{nombre_col}')").strip()
+                if nombre_estudiante:
+                    df_estudiante = df_docente[df_docente[nombre_col].str.lower() == nombre_estudiante.lower()]
+                    if df_estudiante.empty:
+                        st.warning("No se encontró al estudiante.")
+                    else:
+                        st.subheader(f"Datos del estudiante: {nombre_estudiante}")
+                        st.dataframe(df_estudiante)
+            else:
+                columnas_categoricas = [
+                    "Sexo",
+                    "Edad",
+                    "¿Actualmente trabaja?",
+                    "Lugar donde vive",
+                    "Bachillerato",
+                    "Tiempo de desplazamiento",
+                    "¿Cuántas horas al día puede dedicar al estudio fuera del aula?",
+                    "¿Vive con?",
+                    "¿Quién lo(a) apoya económicamente durante sus estudios?"
+                ]
+
                 for col in columnas_categoricas:
                     st.markdown(f"### Distribución: {col}")
                     if col == 'Promedio Bachillerato':
@@ -116,7 +116,6 @@ if uploaded_file:
                         st.pyplot(fig)
 
                         outliers = datos[(datos[col] < lower) | (datos[col] > upper)]
-
                         if not outliers.empty:
                             st.warning(f"⚠️ Se encontraron {len(outliers)} dato(s) atípico(s) en '{col}':")
                             for _, row in outliers.iterrows():
