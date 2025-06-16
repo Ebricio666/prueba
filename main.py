@@ -81,7 +81,8 @@ if uploaded_file:
                 columnas_a_evaluar = [
                     'Edad',
                     'Promedio Bachillerato',
-                    '¿Cuál fue su promedio final en el último ciclo escolar?'
+                    '¿Cuál fue su promedio final en el último ciclo escolar?',
+                    '¿Cuántas horas al día puede dedicar al estudio fuera del aula?'
                 ]
 
                 nombre_col = [col for col in df_docente.columns if "Nombre" in col][0]
