@@ -1,63 +1,73 @@
 import streamlit as st
 import pandas as pd
 
-# requirements.txt
-# streamlit
-# pandas
+st.title("Cuestionario de Ingreso para Estudiantes")
 
-st.title("Cuestionario de Habilidades para el Trabajo en Equipo")
+# Datos Demográficos
+st.header("Datos Demográficos")
+nombre = st.text_input("Nombre completo")
+sexo = st.selectbox("Sexo", ["Femenino", "Masculino", "Otro"])
+edad = st.number_input("Edad", min_value=15, max_value=100, step=1)
+telefono_tutor = st.text_input("Número de contacto de tutor")
+trabaja = st.selectbox("¿Actualmente trabaja?", ["No", "Diario", "Fin de semana"])
+lugar_vive = st.text_input("Lugar donde actualmente vive")
+tiempo_desplazo = st.text_input("¿Cuánto tiempo le toma llegar a la institución?")
+vive_con = st.selectbox("¿Vive con?", ["Solo/a", "Familiares"])
+bachillerato = st.text_input("¿De qué bachillerato egresaste?")
+promedio_bachillerato = st.text_input("¿Cuál es tu promedio de calificación del tercer año de bachillerato?")
 
-st.markdown("""
-Seleccione el nivel con el que se identifica en cada una de las siguientes afirmaciones:
-- 1 = Nada de acuerdo
-- 2 = Poco de acuerdo
-- 3 = Medianamente de acuerdo
-- 4 = De acuerdo
-- 5 = Totalmente de acuerdo
-""")
+# Datos Clínicos
+st.header("Datos Clínicos")
+grupo_sanguineo = st.selectbox("Grupo sanguíneo", ["O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-", "No sabe"])
+alergias = st.text_area("¿Es alérgico a algún alimento o medicamento?")
+padecimientos = st.text_area("¿Padece alguna enfermedad o síndrome?")
 
+# Preguntas Adicionales
+st.header("Preguntas Adicionales")
 preguntas = [
-    "Colaboro de forma activa para que los acuerdos se cumplan.",
-    "Escucho y valoro las ideas de los demás integrantes del equipo.",
-    "Prefiero trabajar solo que colaborar con otros.",
-    "Me siento capaz de coordinar un equipo hacia metas comunes.",
-    "Promuevo la participación equitativa de todos los miembros del equipo.",
-    "Tomo decisiones considerando tanto la lógica como el bienestar del grupo.",
-    "Me adapto fácilmente a cambios en la planeación o ejecución del trabajo.",
-    "Puedo cambiar mi enfoque si las condiciones del entorno lo requieren.",
-    "Me cuesta adaptarme cuando hay cambios imprevistos.",
-    "Me aseguro de que mis mensajes sean claros y comprensibles.",
-    "Escucho activamente antes de emitir una opinión.",
-    "Doy retroalimentación constructiva y con respeto.",
-    "Analizo diferentes alternativas antes de decidir cómo actuar.",
-    "Tomo decisiones fundamentadas en datos y evidencia.",
-    "Evito enfrentar problemas difíciles directamente.",
-    "Busco mejorar mis resultados sin afectar el trabajo de otros.",
-    "Me esfuerzo por destacar con base en la calidad de mi trabajo.",
-    "Comparto mis logros y aprendizajes para motivar a mis colegas."
+    "¿Cuenta con un lugar adecuado para estudiar en casa?",
+    "¿Tiene acceso constante a internet y computadora?",
+    "¿Cuántas horas al día puede dedicar al estudio fuera del aula?",
+    "¿Cuál fue su promedio final en el último ciclo escolar?",
+    "¿Se ha sentido triste o desmotivado frecuentemente en las últimas dos semanas?",
+    "¿A quién acudiría si tuviera un problema emocional o académico?",
+    "¿Ha recibido atención psicológica en el último año?",
+    "¿Quién lo(a) apoya económicamente durante sus estudios?",
+    "¿Cuenta con personas cercanas que lo(a) motivan a continuar con su carrera?",
+    "¿Por qué eligió esta carrera?",
+    "¿Qué espera lograr durante sus estudios universitarios?",
+    "¿Cuáles cree que serán los principales retos que enfrentará?"
 ]
 
-respuestas = {}
+respuestas = [st.text_area(pregunta) for pregunta in preguntas]
 
-for i, pregunta in enumerate(preguntas):
-    respuestas[pregunta] = st.slider(
-        label=f"{i+1}. {pregunta}",
-        min_value=1,
-        max_value=5,
-        value=3,
-        format="%d"
-    )
+# Botón para enviar
+if st.button("Enviar"):
+    st.success("¡Gracias por completar el formulario!")
+    
+    datos = {
+        "Nombre": nombre,
+        "Sexo": sexo,
+        "Edad": edad,
+        "Teléfono Tutor": telefono_tutor,
+        "Trabaja": trabaja,
+        "Lugar donde vive": lugar_vive,
+        "Tiempo de desplazamiento": tiempo_desplazo,
+        "Vive con": vive_con,
+        "Bachillerato": bachillerato,
+        "Promedio Bachillerato": promedio_bachillerato,
+        "Grupo sanguíneo": grupo_sanguineo,
+        "Alergias": alergias,
+        "Padecimientos": padecimientos,
+    }
 
-if st.button("Enviar respuestas"):
-    df_respuestas = pd.DataFrame(respuestas, index=[0])
-    st.write("### Resumen de tus respuestas:")
-    st.dataframe(df_respuestas.T.rename(columns={0: "Puntaje"}))
+    for i, pregunta in enumerate(preguntas):
+        datos[pregunta] = respuestas[i]
 
-    csv = df_respuestas.to_csv(index=False).encode('utf-8')
+    df = pd.DataFrame([datos])
     st.download_button(
-        label="Descargar respuestas en CSV",
-        data=csv,
-        file_name='respuestas_cuestionario.csv',
-        mime='text/csv'
+        label="📥 Descargar respuestas en CSV",
+        data=df.to_csv(index=False),
+        file_name="respuestas_cuestionario.csv",
+        mime="text/csv"
     )
-
