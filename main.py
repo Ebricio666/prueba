@@ -27,7 +27,7 @@ if uploaded_file:
             st.subheader(f"Datos filtrados para la homoclave: {homoclave}")
             st.dataframe(df_docente)
 
-            if st.radio("¿Desea realizar una búsqueda personalizada?", ["No", "Sí"]) == "Sí":
+      if st.radio("¿Desea realizar una búsqueda personalizada?", ["No", "Sí"]) == "Sí":
     nombre_col = [col for col in df_docente.columns if "Nombre" in col][0]
     nombre_estudiante = st.text_input(f"Introduce el nombre del estudiante (columna '{nombre_col}')").strip()
     if nombre_estudiante:
@@ -36,21 +36,19 @@ if uploaded_file:
             st.warning("No se encontró al estudiante.")
         else:
             st.subheader(f"Datos del estudiante: {nombre_estudiante}")
-            st.dataframe(df_estudiante)  # Aquí se muestra horizontal
-
-            else:
-                columnas_categoricas = [
-                    "Sexo",
-                    "Edad",
-                    "¿Actualmente trabaja?",
-                    "Lugar donde vive",
-                    "Bachillerato",
-                    "Tiempo de desplazamiento",
-                    "¿Cuántas horas al día puede dedicar al estudio fuera del aula?",
-                    "¿Vive con?",
-                    "¿Quién lo(a) apoya económicamente durante sus estudios?"
-                ]
-
+            st.dataframe(df_estudiante)  # Muestra la fila horizontalmente
+else:
+    columnas_categoricas = [
+        "Sexo",
+        "Edad",
+        "¿Actualmente trabaja?",
+        "Lugar donde vive",
+        "Bachillerato",
+        "Tiempo de desplazamiento",
+        "¿Cuántas horas al día puede dedicar al estudio fuera del aula?",
+        "¿Vive con?",
+        "¿Quién lo(a) apoya económicamente durante sus estudios?"
+    ]
                 for col in columnas_categoricas:
                     st.markdown(f"### Distribución: {col}")
                     if col == 'Promedio Bachillerato':
