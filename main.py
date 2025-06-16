@@ -45,7 +45,8 @@ if uploaded_file:
                     "Bachillerato",
                     "Tiempo de desplazamiento",
                     "¿Vive con?",
-                    "¿Quién lo(a) apoya económicamente durante sus estudios?"
+                    "¿Quién lo(a) apoya económicamente durante sus estudios?",
+                    '¿Cuántas horas al día puede dedicar al estudio fuera del aula?'
                 ]
 
                 for col in columnas_categoricas:
@@ -81,8 +82,7 @@ if uploaded_file:
                 columnas_a_evaluar = [
                     'Edad',
                     'Promedio Bachillerato',
-                    '¿Cuál fue su promedio final en el último ciclo escolar?',
-                    '¿Cuántas horas al día puede dedicar al estudio fuera del aula?'
+                    '¿Cuál fue su promedio final en el último ciclo escolar?'
                 ]
 
                 nombre_col = [col for col in df_docente.columns if "Nombre" in col][0]
