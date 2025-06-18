@@ -8,7 +8,7 @@ st.set_page_config(layout="wide")
 
 st.markdown("""
 # Reporte gráfico de datos demográficos y áreas de oportunidad de los aspirantes al ingreso a las diversas carreras del Instituto Tecnológico de Colima 2025  
-**Elaborado por:** Dra. Elena Elsa Bricio-Barrios, Dr. Santiago Arceo-Díaz, Psicóloga Martha Cecilia Ramírez-Guzmán
+**Elaborado por:** Dra. Elena Elsa Bricio-Barrios, Dr. Santiago Arceo-Díaz, Psicóloga Martha Cecilia Ramírez-Guzmán, Mtra. Claudia Lissete Castrejón-Cerro
 """)
 
 # Subir archivo
