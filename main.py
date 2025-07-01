@@ -201,70 +201,41 @@ if uploaded_file:
         st.pyplot(fig)
 
     # ==========================
-    # VARIABLES CONTINUAS CON BOXPLOTS
-    # ==========================
-    columnas_continuas = [
-        "Edad",
-        "Promedio_Num",
-        "Tiempo estudio",
-        "Tiempo_desplazamiento_Num",
-        "Tiempo_Num",
-        "Triste_Num"
-    ]
+# VARIABLES CONTINUAS - MOSTRAR SÓLO DATOS ATÍPICOS
+# ==========================
+columnas_continuas = [
+    "Edad",
+    "Promedio_Num",
+    "Tiempo estudio",
+    "Tiempo_desplazamiento_Num",
+    "Tiempo_Num",
+    "Triste_Num"
+]
 
-    for col in columnas_continuas:
-        if col not in df.columns:
-            continue
+for col in columnas_continuas:
+    if col not in df.columns:
+        continue
 
-        df[col] = pd.to_numeric(df[col], errors='coerce')
-        datos = df[[col]].dropna()
+    df[col] = pd.to_numeric(df[col], errors='coerce')
+    datos = df[[col]].dropna()
 
-        if datos.empty:
-            continue
+    if datos.empty:
+        continue
 
-        Q1 = datos[col].quantile(0.25)
-        Q3 = datos[col].quantile(0.75)
-        IQR = Q3 - Q1
-        lower = Q1 - 1.5 * IQR
-        upper = Q3 + 1.5 * IQR
+    Q1 = datos[col].quantile(0.25)
+    Q3 = datos[col].quantile(0.75)
+    IQR = Q3 - Q1
+    lower = Q1 - 1.5 * IQR
+    upper = Q3 + 1.5 * IQR
 
-        # Histograma por rangos
-        if "Edad" in col:
-            bins = np.arange(17, 22, 2)
-        elif "Promedio" in col:
-            bins = np.arange(6.0, 10.5, 0.5)
-        elif "Tiempo estudio" in col:
-            bins = 10
-        elif "Tiempo_desplazamiento" in col:
-            bins = np.arange(0, 70, 10)
-        elif "Tiempo_Num" in col:
-            bins = np.arange(0, 5, 1)
-        elif "Triste_Num" in col:
-            bins = np.arange(0, 12, 2)
-        else:
-            bins = 10
+    # Identificar datos atípicos
+    mask_outliers = (df[col] < lower) | (df[col] > upper)
+    outliers_rows = df[mask_outliers]
 
-        df.loc[:, 'Rango_' + col] = pd.cut(df[col], bins=bins)
-        conteo_barras = df['Rango_' + col].value_counts().sort_index()
+    st.markdown(f"## 🧩 Área de oportunidad: {col}")
 
-        st.markdown(f"### 📈 Histograma: {col}")
-        fig, ax = plt.subplots(figsize=(8, 4))
-        conteo_barras.plot(kind='bar', ax=ax, color='skyblue')
-        ax.set_ylabel('Número de estudiantes')
-        ax.set_xlabel('Rangos')
-        ax.grid(axis='y')
-        st.pyplot(fig)
-
-        st.markdown(f"### 📊 Boxplot: {col}")
-        fig2, ax2 = plt.subplots(figsize=(6, 4))
-        ax2.boxplot(datos[col], vert=False)
-        ax2.set_xlabel(col)
-        ax2.set_title(f"Boxplot: {col}")
-        st.pyplot(fig2)
-
-        outliers = datos[(datos[col] < lower) | (datos[col] > upper)]
-        if not outliers.empty:
-            st.warning(f"⚠️ Se encontraron {len(outliers)} dato(s) atípico(s) en '{col}':")
-            st.dataframe(outliers)
-        else:
-            st.success(f"✅ No se encontraron datos atípicos en '{col}'.")
+    if not outliers_rows.empty:
+        st.warning(f"⚠️ Se encontraron {len(outliers_rows)} dato(s) atípico(s) en '{col}':")
+        st.dataframe(outliers_rows)
+    else:
+        st.success(f"✅ No se encontraron datos atípicos en '{col}'.")
