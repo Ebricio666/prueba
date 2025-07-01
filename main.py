@@ -154,57 +154,58 @@ if uploaded_file:
         df["Triste_Num"] = df["Triste"].apply(convertir_rango_general)
 
     # ==========================
-    # VARIABLES CATEGÓRICAS CON DIAGRAMA DE PASTEL
-    # ==========================
-    columnas_categoricas = [
-        "Sexo",
-        "Edad",
-        "Carrera",
-        "Lugar donde vive",
-        "¿Vive con?",
-        "Tiempo de desplazamiento",
-        "Trabaja",
-        "Bachillerato",
-        "Promedio",
-        "Tiempo",
-        "Triste",
-        "Espacio para trabajar",
-        "Acceso a internet y pc",
-        "Psicologo",
-        "Apoyo carrera"
-    ]
+# VARIABLES CATEGÓRICAS CON DIAGRAMA DE PASTEL Y CONTEO EN LEYENDA
+# ==========================
+columnas_categoricas = [
+    "Sexo",
+    "Edad",
+    "Carrera",
+    "Lugar donde vive",
+    "¿Vive con?",
+    "Tiempo de desplazamiento",
+    "Trabaja",
+    "Bachillerato",
+    "Promedio",
+    "Tiempo",
+    "Triste",
+    "Espacio para trabajar",
+    "Acceso a internet y pc",
+    "Psicologo",
+    "Apoyo carrera"
+]
 
-    columnas_categoricas = list(dict.fromkeys(columnas_categoricas))
+columnas_categoricas = list(dict.fromkeys(columnas_categoricas))
 
-    for col in columnas_categoricas:
-        if col not in df.columns:
-            continue
+for col in columnas_categoricas:
+    if col not in df.columns:
+        continue
 
-        st.markdown(f"### 🥧 Distribución: {col}")
+    st.markdown(f"### 🥧 Distribución: {col}")
 
-        conteo = df[col].value_counts(dropna=False).sort_index()
-        porcentaje = (conteo / conteo.sum()) * 100
+    conteo = df[col].value_counts(dropna=False).sort_index()
+    porcentaje = (conteo / conteo.sum()) * 100
 
-        categorias = [str(cat) for cat in conteo.index]
-        sizes = porcentaje.values
+    # Etiquetas para la leyenda: nombre + conteo
+    categorias_con_conteo = [f"{str(cat)} ({conteo[cat]})" for cat in conteo.index]
+    sizes = porcentaje.values
 
-        fig, ax = plt.subplots(figsize=(5, 5))
-        wedges, texts, autotexts = ax.pie(
-            sizes,
-            labels=None,  # Sin etiquetas largas sobre el pastel
-            autopct="%1.1f%%",
-            startangle=90,
-            wedgeprops={'linewidth': 1, 'edgecolor': 'white'}
-        )
+    fig, ax = plt.subplots(figsize=(5, 5))
+    wedges, texts, autotexts = ax.pie(
+        sizes,
+        labels=None,  # Solo % dentro del pastel
+        autopct="%1.1f%%",
+        startangle=90,
+        wedgeprops={'linewidth': 1, 'edgecolor': 'white'}
+    )
 
-        ax.axis('equal')
-        ax.set_title(f"Distribución: {col}")
+    ax.axis('equal')
+    ax.set_title(f"Distribución: {col}")
 
-        # Leyenda al lado
-        ax.legend(wedges, categorias, title="Categorías", bbox_to_anchor=(1, 0.5), loc="center left")
+    # Leyenda: categoría + (n)
+    ax.legend(wedges, categorias_con_conteo, title="Categorías", bbox_to_anchor=(1, 0.5), loc="center left")
 
-        st.pyplot(fig)
-
+    st.pyplot(fig)
+    
     # ==========================
     # VARIABLES CONTINUAS - SOLO MOSTRAR DATOS ATÍPICOS
     # ==========================
