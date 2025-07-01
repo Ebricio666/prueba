@@ -8,8 +8,7 @@ st.set_page_config(layout="wide")
 
 st.markdown("""
 # Reporte gráfico de datos demográficos y áreas de oportunidad de los aspirantes al ingreso a las diversas carreras del Instituto Tecnológico de Colima 2025  
-**Elaborado por:** Dra. Elena Elsa Bricio-Barrios, Dr. Santiago Arceo-Díaz, Psicóloga Martha Cecilia Ramírez-Guzmán, Mtra. Claudia Lissete Castrejón-Cerro
-""")
+**Elaborado por:** Dra. Elena Elsa Bricio-Barrios, Dr. Santiago Arceo-Díaz y Psicóloga Martha Cecilia Ramírez-Guzmán""")
 
 # Subir archivo
 uploaded_file = st.file_uploader("Sube el archivo Excel con los datos", type=["xlsx"])
@@ -39,20 +38,25 @@ if uploaded_file:
                         st.dataframe(df_estudiante)
             else:
                 columnas_categoricas = [
-                    "Sexo",
-                    "Edad",
-                    "¿Actualmente trabaja?",
-                    "Lugar donde vive",
-                    "Bachillerato",
-                    "Tiempo de desplazamiento",
-                    "¿Cuántas horas al día puede dedicar al estudio fuera del aula?",
+                    "Sexo",	
+                    "Edad",	
+                    "Carrera",
                     "¿Vive con?",
-                    "¿Quién lo(a) apoya económicamente durante sus estudios?"
+                    "Tiempo de desplazamiento",
+                    "Trabaja",
+                    "¿Vive con?",
+                    "Bachillerato",
+                    "Promedio",
+                    "Espacio para trabajar",
+                    "Acceso a internet y pc",	
+                    "Triste",	
+                    "Psicologo",	
+                    "Apoyo carrera"
                 ]
 
                 for col in columnas_categoricas:
                     st.markdown(f"### Distribución: {col}")
-                    if col == 'Promedio Bachillerato':
+                    if col == 'Promedio':
                         bins = np.arange(6.0, 10.5, 0.5)
                         etiquetas = [f'{i:.1f} - {i + 0.4:.1f}' for i in bins[:-1]]
                         df_docente['Rango Promedio'] = pd.cut(df_docente[col], bins=bins, labels=etiquetas)
@@ -82,8 +86,8 @@ if uploaded_file:
 
                 columnas_a_evaluar = [
                     'Edad',
-                    'Promedio Bachillerato',
-                    '¿Cuál fue su promedio de los tres años de Bachillerato?'
+                    'Promedio',
+                    'Tiempo de estudio'
                 ]
 
                 nombre_col = [col for col in df_docente.columns if "Nombre" in col][0]
