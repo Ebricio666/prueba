@@ -62,10 +62,9 @@ if uploaded_file:
 
     faltantes = [col for col in encabezados_esperados if col not in headers]
     if faltantes:
-        st.error("❌ Encabezados faltantes:")
+        st.warning("⚠️ Encabezados faltantes:")
         for col in faltantes:
             st.write(f"- {col}")
-        st.stop()
     else:
         st.success("✅ Todos los encabezados esperados están presentes.")
 
@@ -153,25 +152,6 @@ if uploaded_file:
 
     if "Triste" in df.columns:
         df["Triste_Num"] = df["Triste"].apply(convertir_rango_general)
-
-    # ==========================
-    # BÚSQUEDA OPCIONAL
-    # ==========================
-    nombre_cols = [col for col in df.columns if "Nombre" in col]
-    nombre_col = nombre_cols[0] if nombre_cols else None
-
-    if nombre_col:
-        if st.radio("🔍 ¿Desea realizar una búsqueda personalizada?", ["No", "Sí"]) == "Sí":
-            nombre_estudiante = st.text_input(f"Introduce el nombre del estudiante (columna '{nombre_col}')").strip()
-            if nombre_estudiante:
-                df_estudiante = df[
-                    df[nombre_col].astype(str).str.lower().str.contains(nombre_estudiante.lower(), na=False)
-                ]
-                if df_estudiante.empty:
-                    st.warning("⚠️ No se encontró al estudiante.")
-                else:
-                    st.subheader(f"🎓 Datos del estudiante: {nombre_estudiante}")
-                    st.dataframe(df_estudiante)
 
     # ==========================
     # VARIABLES CATEGÓRICAS
