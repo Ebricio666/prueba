@@ -154,52 +154,51 @@ if uploaded_file:
         df["Triste_Num"] = df["Triste"].apply(convertir_rango_general)
 
     # ==========================
-    # VARIABLES CATEGÓRICAS
-    # ==========================
-    columnas_categoricas = [
-        "Sexo",
-        "Edad",
-        "Carrera",
-        "Lugar donde vive",
-        "¿Vive con?",
-        "Tiempo de desplazamiento",
-        "Trabaja",
-        "Bachillerato",
-        "Promedio",
-        "Tiempo",
-        "Triste",
-        "Espacio para trabajar",
-        "Acceso a internet y pc",
-        "Psicologo",
-        "Apoyo carrera"
-    ]
+# VARIABLES CATEGÓRICAS CON DIAGRAMA DE PASTEL
+# ==========================
+columnas_categoricas = [
+    "Sexo",
+    "Edad",
+    "Carrera",
+    "Lugar donde vive",
+    "¿Vive con?",
+    "Tiempo de desplazamiento",
+    "Trabaja",
+    "Bachillerato",
+    "Promedio",
+    "Tiempo",
+    "Triste",
+    "Espacio para trabajar",
+    "Acceso a internet y pc",
+    "Psicologo",
+    "Apoyo carrera"
+]
 
-    columnas_categoricas = list(dict.fromkeys(columnas_categoricas))
+columnas_categoricas = list(dict.fromkeys(columnas_categoricas))
 
-    for col in columnas_categoricas:
-        if col not in df.columns:
-            continue
+for col in columnas_categoricas:
+    if col not in df.columns:
+        continue
 
-        st.markdown(f"### 📊 Distribución: {col}")
+    st.markdown(f"### 🥧 Distribución: {col}")
 
-        conteo = df[col].value_counts(dropna=False).sort_index()
-        porcentaje = (conteo / conteo.sum()) * 100
+    conteo = df[col].value_counts(dropna=False).sort_index()
+    porcentaje = (conteo / conteo.sum()) * 100
 
-        fig, ax = plt.subplots(figsize=(10, 2))
-        left = 0
-        for cat in porcentaje.index:
-            val = porcentaje[cat]
-            n = conteo[cat]
-            label = f"{cat} ({n})"
-            ax.barh(0, val, left=left, label=label)
-            left += val
+    labels = [f"{cat} ({conteo[cat]})" for cat in conteo.index]
+    sizes = porcentaje.values
 
-        ax.set_xlim(0, 100)
-        ax.set_xlabel('Porcentaje (%)')
-        ax.set_yticks([])
-        ax.legend(title='Respuesta', bbox_to_anchor=(1.02, 1), loc='upper left')
-        st.pyplot(fig)
-
+    fig, ax = plt.subplots(figsize=(5, 5))
+    ax.pie(
+        sizes,
+        labels=labels,
+        autopct="%1.1f%%",
+        startangle=90,
+        wedgeprops={'linewidth': 1, 'edgecolor': 'white'}
+    )
+    ax.axis('equal')  # Circulo perfecto
+    ax.set_title(f"Distribución: {col}")
+    st.pyplot(fig)
     # ==========================
 # VARIABLES CONTINUAS - MOSTRAR SÓLO DATOS ATÍPICOS
 # ==========================
