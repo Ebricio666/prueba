@@ -16,7 +16,7 @@ uploaded_file = st.file_uploader("📁 Sube el archivo Excel con los datos", typ
 if uploaded_file:
     df = pd.read_excel(uploaded_file)
 
-    # Verifica encabezados
+    # Verificar encabezados
     headers = df.columns.tolist()
     st.subheader("📌 Encabezados detectados:")
     st.write(headers)
@@ -41,7 +41,7 @@ if uploaded_file:
         "¿Vive con?",
         "Tiempo de desplazamiento",
         "Trabaja",
-        "¿Vive con?",  # ⚠️ Renombra en tu archivo si tienes duplicados
+        "¿Vive con?",  # ⚠️ Renombra si tienes duplicados
         "Bachillerato",
         "Promedio",
         "Tel de contacto",
@@ -70,7 +70,7 @@ if uploaded_file:
     st.subheader("📊 Todos los datos cargados")
     st.dataframe(df)
 
-    # Búsqueda opcional por nombre
+    # 🔍 Búsqueda opcional por nombre
     nombre_cols = [col for col in df.columns if "Nombre" in col]
     if nombre_cols:
         nombre_col = nombre_cols[0]
@@ -86,6 +86,29 @@ if uploaded_file:
                 else:
                     st.subheader(f"🎓 Datos del estudiante: {nombre_estudiante}")
                     st.dataframe(df_estudiante)
+
+    # ✅ FUNCION PARA CONVERTIR RANGO A PROMEDIO NUMÉRICO
+    def convertir_rango_a_promedio(valor):
+        if pd.isna(valor):
+            return np.nan
+        if isinstance(valor, (int, float)):
+            return valor
+        if isinstance(valor, str) and "a" in valor:
+            partes = valor.split("a")
+            try:
+                minimo = float(partes[0].strip())
+                maximo = float(partes[1].strip())
+                return (minimo + maximo) / 2
+            except:
+                return np.nan
+        try:
+            return float(valor)
+        except:
+            return np.nan
+
+    # ✅ Aplicar conversión
+    if "Promedio" in df.columns:
+        df["Promedio_Num"] = df["Promedio"].apply(convertir_rango_a_promedio)
 
     # Variables categóricas
     columnas_categoricas = [
@@ -115,10 +138,7 @@ if uploaded_file:
         st.markdown(f"### 📊 Distribución: {col}")
 
         if col == 'Promedio':
-            bins = np.arange(6.0, 10.5, 0.5)
-            etiquetas = [f'{i:.1f} - {i + 0.4:.1f}' for i in bins[:-1]]
-            df.loc[:, 'Rango Promedio'] = pd.cut(df[col], bins=bins, labels=etiquetas)
-            conteo = df['Rango Promedio'].value_counts().sort_index()
+            conteo = df[col].value_counts().sort_index()
         else:
             conteo = df[col].value_counts(dropna=False)
 
@@ -143,7 +163,7 @@ if uploaded_file:
     # Variables continuas
     columnas_a_evaluar = [
         'Edad',
-        'Promedio',
+        'Promedio_Num',  # Usar columna numérica convertida
         'Tiempo estudio'
     ]
 
@@ -166,9 +186,9 @@ if uploaded_file:
         lower = Q1 - 1.5 * IQR
         upper = Q3 + 1.5 * IQR
 
-        if col == 'Edad':
+        if 'Edad' in col:
             bins = np.arange(17, 22, 2)
-        elif 'promedio' in col.lower():
+        elif 'Promedio' in col:
             bins = np.arange(6.0, 10.5, 0.5)
         else:
             bins = 10
