@@ -154,87 +154,92 @@ if uploaded_file:
         df["Triste_Num"] = df["Triste"].apply(convertir_rango_general)
 
     # ==========================
-# VARIABLES CATEGÓRICAS CON DIAGRAMA DE PASTEL
-# ==========================
-columnas_categoricas = [
-    "Sexo",
-    "Edad",
-    "Carrera",
-    "Lugar donde vive",
-    "¿Vive con?",
-    "Tiempo de desplazamiento",
-    "Trabaja",
-    "Bachillerato",
-    "Promedio",
-    "Tiempo",
-    "Triste",
-    "Espacio para trabajar",
-    "Acceso a internet y pc",
-    "Psicologo",
-    "Apoyo carrera"
-]
-
-columnas_categoricas = list(dict.fromkeys(columnas_categoricas))
-
-for col in columnas_categoricas:
-    if col not in df.columns:
-        continue
-
-    st.markdown(f"### 🥧 Distribución: {col}")
-
-    conteo = df[col].value_counts(dropna=False).sort_index()
-    porcentaje = (conteo / conteo.sum()) * 100
-
-    labels = [f"{cat} ({conteo[cat]})" for cat in conteo.index]
-    sizes = porcentaje.values
-
-    fig, ax = plt.subplots(figsize=(5, 5))
-    ax.pie(
-        sizes,
-        labels=labels,
-        autopct="%1.1f%%",
-        startangle=90,
-        wedgeprops={'linewidth': 1, 'edgecolor': 'white'}
-    )
-    ax.axis('equal')  # Circulo perfecto
-    ax.set_title(f"Distribución: {col}")
-    st.pyplot(fig)
+    # VARIABLES CATEGÓRICAS CON DIAGRAMA DE PASTEL
     # ==========================
-# VARIABLES CONTINUAS - MOSTRAR SÓLO DATOS ATÍPICOS
-# ==========================
-columnas_continuas = [
-    "Edad",
-    "Promedio_Num",
-    "Tiempo estudio",
-    "Tiempo_desplazamiento_Num",
-    "Tiempo_Num",
-    "Triste_Num"
-]
+    columnas_categoricas = [
+        "Sexo",
+        "Edad",
+        "Carrera",
+        "Lugar donde vive",
+        "¿Vive con?",
+        "Tiempo de desplazamiento",
+        "Trabaja",
+        "Bachillerato",
+        "Promedio",
+        "Tiempo",
+        "Triste",
+        "Espacio para trabajar",
+        "Acceso a internet y pc",
+        "Psicologo",
+        "Apoyo carrera"
+    ]
 
-for col in columnas_continuas:
-    if col not in df.columns:
-        continue
+    columnas_categoricas = list(dict.fromkeys(columnas_categoricas))
 
-    df[col] = pd.to_numeric(df[col], errors='coerce')
-    datos = df[[col]].dropna()
+    for col in columnas_categoricas:
+        if col not in df.columns:
+            continue
 
-    if datos.empty:
-        continue
+        st.markdown(f"### 🥧 Distribución: {col}")
 
-    Q1 = datos[col].quantile(0.25)
-    Q3 = datos[col].quantile(0.75)
-    IQR = Q3 - Q1
-    lower = Q1 - 1.5 * IQR
-    upper = Q3 + 1.5 * IQR
+        conteo = df[col].value_counts(dropna=False).sort_index()
+        porcentaje = (conteo / conteo.sum()) * 100
 
-    # Identificar datos atípicos
-    mask_outliers = (df[col] < lower) | (df[col] > upper)
-    outliers_rows = df[mask_outliers]
+        categorias = [str(cat) for cat in conteo.index]
+        sizes = porcentaje.values
 
-    st.markdown(f"## 🧩 Área de oportunidad: {col}")
+        fig, ax = plt.subplots(figsize=(5, 5))
+        wedges, texts, autotexts = ax.pie(
+            sizes,
+            labels=None,  # Sin etiquetas largas sobre el pastel
+            autopct="%1.1f%%",
+            startangle=90,
+            wedgeprops={'linewidth': 1, 'edgecolor': 'white'}
+        )
 
-    if not outliers_rows.empty:
-        st.warning(f"⚠️ Se encontraron {len(outliers_rows)} dato(s) atípico(s) en '{col}':")
-        st.dataframe(outliers_rows)
-    else:
-        st.success(f"✅ No se encontraron datos atípicos en '{col}'.")
+        ax.axis('equal')
+        ax.set_title(f"Distribución: {col}")
+
+        # Leyenda al lado
+        ax.legend(wedges, categorias, title="Categorías", bbox_to_anchor=(1, 0.5), loc="center left")
+
+        st.pyplot(fig)
+
+    # ==========================
+    # VARIABLES CONTINUAS - SOLO MOSTRAR DATOS ATÍPICOS
+    # ==========================
+    columnas_continuas = [
+        "Edad",
+        "Promedio_Num",
+        "Tiempo estudio",
+        "Tiempo_desplazamiento_Num",
+        "Tiempo_Num",
+        "Triste_Num"
+    ]
+
+    for col in columnas_continuas:
+        if col not in df.columns:
+            continue
+
+        df[col] = pd.to_numeric(df[col], errors='coerce')
+        datos = df[[col]].dropna()
+
+        if datos.empty:
+            continue
+
+        Q1 = datos[col].quantile(0.25)
+        Q3 = datos[col].quantile(0.75)
+        IQR = Q3 - Q1
+        lower = Q1 - 1.5 * IQR
+        upper = Q3 + 1.5 * IQR
+
+        mask_outliers = (df[col] < lower) | (df[col] > upper)
+        outliers_rows = df[mask_outliers]
+
+        st.markdown(f"## 🧩 Área de oportunidad: {col}")
+
+        if not outliers_rows.empty:
+            st.warning(f"⚠️ Se encontraron {len(outliers_rows)} dato(s) atípico(s) en '{col}':")
+            st.dataframe(outliers_rows)
+        else:
+            st.success(f"✅ No se encontraron datos atípicos en '{col}'.")
