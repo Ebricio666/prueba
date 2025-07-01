@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 
 st.set_page_config(layout="wide")
 
@@ -10,13 +10,17 @@ st.markdown("""
 **Elaborado por:** Dra. Elena Elsa Bricio-Barrios, Dr. Santiago Arceo-Díaz y Psicóloga Martha Cecilia Ramírez-Guzmán
 """)
 
-# Subir archivo
+# ==========================
+# SUBIR ARCHIVO
+# ==========================
 uploaded_file = st.file_uploader("📁 Sube el archivo Excel con los datos", type=["xlsx"])
 
 if uploaded_file:
     df = pd.read_excel(uploaded_file)
 
-    # Verificar encabezados
+    # ==========================
+    # VALIDAR ENCABEZADOS
+    # ==========================
     headers = df.columns.tolist()
     st.subheader("📌 Encabezados detectados:")
     st.write(headers)
@@ -41,7 +45,6 @@ if uploaded_file:
         "¿Vive con?",
         "Tiempo de desplazamiento",
         "Trabaja",
-        "¿Vive con?",  # ⚠️ Renombra si tienes duplicados
         "Bachillerato",
         "Promedio",
         "Tel de contacto",
@@ -51,6 +54,7 @@ if uploaded_file:
         "Espacio para trabajar",
         "Acceso a internet y pc",
         "Tiempo estudio",
+        "Tiempo",
         "Triste",
         "Psicologo",
         "Apoyo carrera"
@@ -65,30 +69,13 @@ if uploaded_file:
     else:
         st.success("✅ Todos los encabezados esperados están presentes.")
 
-    # ✅ TODOS pueden ver todos los datos
-    df['Homoclave del docente'] = df['Homoclave del docente'].fillna("").astype(str)
     st.subheader("📊 Todos los datos cargados")
     st.dataframe(df)
 
-    # 🔍 Búsqueda opcional por nombre
-    nombre_cols = [col for col in df.columns if "Nombre" in col]
-    if nombre_cols:
-        nombre_col = nombre_cols[0]
-
-        if st.radio("🔍 ¿Desea realizar una búsqueda personalizada?", ["No", "Sí"]) == "Sí":
-            nombre_estudiante = st.text_input(f"Introduce el nombre del estudiante (columna '{nombre_col}')").strip()
-            if nombre_estudiante:
-                df_estudiante = df[
-                    df[nombre_col].astype(str).str.lower().str.contains(nombre_estudiante.lower(), na=False)
-                ]
-                if df_estudiante.empty:
-                    st.warning("⚠️ No se encontró al estudiante.")
-                else:
-                    st.subheader(f"🎓 Datos del estudiante: {nombre_estudiante}")
-                    st.dataframe(df_estudiante)
-
-    # ✅ FUNCION PARA CONVERTIR RANGO A PROMEDIO NUMÉRICO
-    def convertir_rango_a_promedio(valor):
+    # ==========================
+    # FUNCIONES PARA CONVERTIR RANGOS
+    # ==========================
+    def convertir_rango_promedio(valor):
         if pd.isna(valor):
             return np.nan
         if isinstance(valor, (int, float)):
@@ -106,11 +93,89 @@ if uploaded_file:
         except:
             return np.nan
 
-    # ✅ Aplicar conversión
-    if "Promedio" in df.columns:
-        df["Promedio_Num"] = df["Promedio"].apply(convertir_rango_a_promedio)
+    def convertir_rango_tiempo_desplazamiento(valor):
+        if pd.isna(valor):
+            return np.nan
+        valor = str(valor).lower()
+        if "menos de" in valor:
+            try:
+                num = [int(s) for s in valor.split() if s.isdigit()][0]
+                return num / 2
+            except:
+                return np.nan
+        elif "de" in valor and "a" in valor:
+            partes = valor.replace("min", "").split("a")
+            try:
+                minimo = int(partes[0].split()[-1].strip())
+                maximo = int(partes[1].strip())
+                return (minimo + maximo) / 2
+            except:
+                return np.nan
+        else:
+            return np.nan
 
-    # Variables categóricas
+    def convertir_rango_general(valor):
+        if pd.isna(valor):
+            return np.nan
+        valor = str(valor).lower()
+        if "ninguna" in valor:
+            return 0
+        if "menos de" in valor:
+            try:
+                num = [float(s) for s in valor.split() if s.replace('.', '', 1).isdigit()][0]
+                return num / 2
+            except:
+                return np.nan
+        if "a" in valor:
+            partes = valor.split("a")
+            try:
+                minimo = float(partes[0].strip())
+                maximo = float(partes[1].split()[0].strip())
+                return (minimo + maximo) / 2
+            except:
+                return np.nan
+        try:
+            return float(valor)
+        except:
+            return np.nan
+
+    # ==========================
+    # APLICAR CONVERSIONES
+    # ==========================
+    if "Promedio" in df.columns:
+        df["Promedio_Num"] = df["Promedio"].apply(convertir_rango_promedio)
+
+    if "Tiempo de desplazamiento" in df.columns:
+        df["Tiempo_desplazamiento_Num"] = df["Tiempo de desplazamiento"].apply(convertir_rango_tiempo_desplazamiento)
+
+    if "Tiempo" in df.columns:
+        df["Tiempo_Num"] = df["Tiempo"].apply(convertir_rango_general)
+
+    if "Triste" in df.columns:
+        df["Triste_Num"] = df["Triste"].apply(convertir_rango_general)
+
+    # ==========================
+    # BÚSQUEDA OPCIONAL
+    # ==========================
+    nombre_cols = [col for col in df.columns if "Nombre" in col]
+    nombre_col = nombre_cols[0] if nombre_cols else None
+
+    if nombre_col:
+        if st.radio("🔍 ¿Desea realizar una búsqueda personalizada?", ["No", "Sí"]) == "Sí":
+            nombre_estudiante = st.text_input(f"Introduce el nombre del estudiante (columna '{nombre_col}')").strip()
+            if nombre_estudiante:
+                df_estudiante = df[
+                    df[nombre_col].astype(str).str.lower().str.contains(nombre_estudiante.lower(), na=False)
+                ]
+                if df_estudiante.empty:
+                    st.warning("⚠️ No se encontró al estudiante.")
+                else:
+                    st.subheader(f"🎓 Datos del estudiante: {nombre_estudiante}")
+                    st.dataframe(df_estudiante)
+
+    # ==========================
+    # VARIABLES CATEGÓRICAS
+    # ==========================
     columnas_categoricas = [
         "Sexo",
         "Edad",
@@ -121,33 +186,28 @@ if uploaded_file:
         "Trabaja",
         "Bachillerato",
         "Promedio",
+        "Tiempo",
+        "Triste",
         "Espacio para trabajar",
         "Acceso a internet y pc",
-        "Triste",
         "Psicologo",
         "Apoyo carrera"
     ]
 
-    columnas_categoricas = list(dict.fromkeys(columnas_categoricas))  # Quitar duplicados
+    columnas_categoricas = list(dict.fromkeys(columnas_categoricas))
 
     for col in columnas_categoricas:
         if col not in df.columns:
-            st.info(f"ℹ️ La columna '{col}' no se encontró en los datos. Se omite.")
             continue
 
         st.markdown(f"### 📊 Distribución: {col}")
 
-        if col == 'Promedio':
-            conteo = df[col].value_counts().sort_index()
-        else:
-            conteo = df[col].value_counts(dropna=False)
-
+        conteo = df[col].value_counts(dropna=False).sort_index()
         porcentaje = (conteo / conteo.sum()) * 100
-        categorias = porcentaje.index.tolist()
 
         fig, ax = plt.subplots(figsize=(10, 2))
         left = 0
-        for cat in categorias:
+        for cat in porcentaje.index:
             val = porcentaje[cat]
             n = conteo[cat]
             label = f"{cat} ({n})"
@@ -160,24 +220,26 @@ if uploaded_file:
         ax.legend(title='Respuesta', bbox_to_anchor=(1.02, 1), loc='upper left')
         st.pyplot(fig)
 
-    # Variables continuas
-    columnas_a_evaluar = [
-        'Edad',
-        'Promedio_Num',  # Usar columna numérica convertida
-        'Tiempo estudio'
+    # ==========================
+    # VARIABLES CONTINUAS CON BOXPLOTS
+    # ==========================
+    columnas_continuas = [
+        "Edad",
+        "Promedio_Num",
+        "Tiempo estudio",
+        "Tiempo_desplazamiento_Num",
+        "Tiempo_Num",
+        "Triste_Num"
     ]
 
-    for col in columnas_a_evaluar:
+    for col in columnas_continuas:
         if col not in df.columns:
-            st.info(f"ℹ️ La columna '{col}' no se encontró en los datos. Se omite.")
             continue
 
-        st.markdown(f"### 📈 Distribución de {col}")
-
-        datos = df[[nombre_col, col]].dropna()
+        df[col] = pd.to_numeric(df[col], errors='coerce')
+        datos = df[[col]].dropna()
 
         if datos.empty:
-            st.warning(f"⚠️ No hay datos disponibles para '{col}'.")
             continue
 
         Q1 = datos[col].quantile(0.25)
@@ -186,16 +248,26 @@ if uploaded_file:
         lower = Q1 - 1.5 * IQR
         upper = Q3 + 1.5 * IQR
 
-        if 'Edad' in col:
+        # Histograma por rangos
+        if "Edad" in col:
             bins = np.arange(17, 22, 2)
-        elif 'Promedio' in col:
+        elif "Promedio" in col:
             bins = np.arange(6.0, 10.5, 0.5)
+        elif "Tiempo estudio" in col:
+            bins = 10
+        elif "Tiempo_desplazamiento" in col:
+            bins = np.arange(0, 70, 10)
+        elif "Tiempo_Num" in col:
+            bins = np.arange(0, 5, 1)
+        elif "Triste_Num" in col:
+            bins = np.arange(0, 12, 2)
         else:
             bins = 10
 
         df.loc[:, 'Rango_' + col] = pd.cut(df[col], bins=bins)
         conteo_barras = df['Rango_' + col].value_counts().sort_index()
 
+        st.markdown(f"### 📈 Histograma: {col}")
         fig, ax = plt.subplots(figsize=(8, 4))
         conteo_barras.plot(kind='bar', ax=ax, color='skyblue')
         ax.set_ylabel('Número de estudiantes')
@@ -203,10 +275,16 @@ if uploaded_file:
         ax.grid(axis='y')
         st.pyplot(fig)
 
+        st.markdown(f"### 📊 Boxplot: {col}")
+        fig2, ax2 = plt.subplots(figsize=(6, 4))
+        ax2.boxplot(datos[col], vert=False)
+        ax2.set_xlabel(col)
+        ax2.set_title(f"Boxplot: {col}")
+        st.pyplot(fig2)
+
         outliers = datos[(datos[col] < lower) | (datos[col] > upper)]
         if not outliers.empty:
             st.warning(f"⚠️ Se encontraron {len(outliers)} dato(s) atípico(s) en '{col}':")
-            for _, row in outliers.iterrows():
-                st.text(f"- {row[nombre_col]}: {col} = {row[col]}")
+            st.dataframe(outliers)
         else:
             st.success(f"✅ No se encontraron datos atípicos en '{col}'.")
