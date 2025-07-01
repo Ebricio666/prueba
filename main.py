@@ -1,3 +1,4 @@
+# app.py
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -34,30 +35,12 @@ if uploaded_file:
         st.success("✅ No hay encabezados duplicados.")
 
     encabezados_esperados = [
-        "Fecha",
-        "Homoclave del docente",
-        "Correo",
-        "Carrera",
-        "Nombre",
-        "Sexo",
-        "Edad",
-        "Lugar donde vive",
-        "¿Vive con?",
-        "Tiempo de desplazamiento",
-        "Trabaja",
-        "Bachillerato",
-        "Promedio",
-        "Tel de contacto",
-        "Alergia",
-        "Enfermedades",
-        "Grupo sanguíneo",
-        "Espacio para trabajar",
-        "Acceso a internet y pc",
-        "Tiempo estudio",
-        "Tiempo",
-        "Triste",
-        "Psicologo",
-        "Apoyo carrera"
+        "Fecha", "Homoclave del docente", "Correo", "Carrera", "Nombre",
+        "Sexo", "Edad", "Lugar donde vive", "¿Vive con?",
+        "Tiempo de desplazamiento", "Trabaja", "Bachillerato", "Promedio",
+        "Tel de contacto", "Alergia", "Enfermedades", "Grupo sanguíneo",
+        "Espacio para trabajar", "Acceso a internet y pc", "Tiempo estudio",
+        "Tiempo", "Triste", "Psicologo", "Apoyo carrera"
     ]
 
     faltantes = [col for col in encabezados_esperados if col not in headers]
@@ -79,8 +62,8 @@ if uploaded_file:
             return np.nan
         if isinstance(valor, (int, float)):
             return valor
-        if isinstance(valor, str) and "a" in valor:
-            partes = valor.split("a")
+        if "a" in str(valor):
+            partes = str(valor).split("a")
             try:
                 minimo = float(partes[0].strip())
                 maximo = float(partes[1].strip())
@@ -154,58 +137,43 @@ if uploaded_file:
         df["Triste_Num"] = df["Triste"].apply(convertir_rango_general)
 
     # ==========================
-# VARIABLES CATEGÓRICAS CON DIAGRAMA DE PASTEL Y CONTEO EN LEYENDA
-# ==========================
-columnas_categoricas = [
-    "Sexo",
-    "Edad",
-    "Carrera",
-    "Lugar donde vive",
-    "¿Vive con?",
-    "Tiempo de desplazamiento",
-    "Trabaja",
-    "Bachillerato",
-    "Promedio",
-    "Tiempo",
-    "Triste",
-    "Espacio para trabajar",
-    "Acceso a internet y pc",
-    "Psicologo",
-    "Apoyo carrera"
-]
+    # VARIABLES CATEGÓRICAS CON DIAGRAMA DE PASTEL
+    # ==========================
+    columnas_categoricas = [
+        "Sexo", "Edad", "Carrera", "Lugar donde vive", "¿Vive con?",
+        "Tiempo de desplazamiento", "Trabaja", "Bachillerato", "Promedio",
+        "Tiempo", "Triste", "Espacio para trabajar",
+        "Acceso a internet y pc", "Psicologo", "Apoyo carrera"
+    ]
 
-columnas_categoricas = list(dict.fromkeys(columnas_categoricas))
+    columnas_categoricas = list(dict.fromkeys(columnas_categoricas))
 
-for col in columnas_categoricas:
-    if col not in df.columns:
-        continue
+    for col in columnas_categoricas:
+        if col not in df.columns:
+            continue
 
-    st.markdown(f"### 🥧 Distribución: {col}")
+        st.markdown(f"### 🥧 Distribución: {col}")
 
-    conteo = df[col].value_counts(dropna=False).sort_index()
-    porcentaje = (conteo / conteo.sum()) * 100
+        conteo = df[col].value_counts(dropna=False).sort_index()
+        porcentaje = (conteo / conteo.sum()) * 100
 
-    # Etiquetas para la leyenda: nombre + conteo
-    categorias_con_conteo = [f"{str(cat)} ({conteo[cat]})" for cat in conteo.index]
-    sizes = porcentaje.values
+        categorias_con_conteo = [f"{str(cat)} ({conteo[cat]})" for cat in conteo.index]
+        sizes = porcentaje.values
 
-    fig, ax = plt.subplots(figsize=(5, 5))
-    wedges, texts, autotexts = ax.pie(
-        sizes,
-        labels=None,  # Solo % dentro del pastel
-        autopct="%1.1f%%",
-        startangle=90,
-        wedgeprops={'linewidth': 1, 'edgecolor': 'white'}
-    )
+        fig, ax = plt.subplots(figsize=(5, 5))
+        wedges, texts, autotexts = ax.pie(
+            sizes,
+            labels=None,
+            autopct="%1.1f%%",
+            startangle=90,
+            wedgeprops={'linewidth': 1, 'edgecolor': 'white'}
+        )
 
-    ax.axis('equal')
-    ax.set_title(f"Distribución: {col}")
+        ax.axis('equal')
+        ax.set_title(f"Distribución: {col}")
+        ax.legend(wedges, categorias_con_conteo, title="Categorías", bbox_to_anchor=(1, 0.5), loc="center left")
+        st.pyplot(fig)
 
-    # Leyenda: categoría + (n)
-    ax.legend(wedges, categorias_con_conteo, title="Categorías", bbox_to_anchor=(1, 0.5), loc="center left")
-
-    st.pyplot(fig)
-    
     # ==========================
     # VARIABLES CONTINUAS - SOLO MOSTRAR DATOS ATÍPICOS
     # ==========================
