@@ -1,3 +1,4 @@
+# 📊 app.py para Streamlit
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -11,70 +12,50 @@ st.markdown("""
 **Elaborado por:** Dra. Elena Elsa Bricio-Barrios, Dr. Santiago Arceo-Díaz y Psicóloga Martha Cecilia Ramírez-Guzmán
 """)
 
-# 1️⃣ Cargar datos desde Google Sheets (publicado como CSV)
-url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRUEJ2VNXXXXX/pub?output=csv"  # <-- Cambia aquí tu URL publicada
+# ✅ 1️⃣ URL PÚBLICO CSV
+url = "https://docs.google.com/spreadsheets/d/e/TU_ID/pub?output=csv"  # Reemplaza TU_ID
 df = pd.read_csv(url)
-
 st.success(f"✅ Datos cargados: {df.shape[0]} registros")
 st.dataframe(df.head())
 
-# 2️⃣ Normaliza MUNICIPIO y INSTITUCIÓN
+# ✅ 2️⃣ Normalización de MUNICIPIO e INSTITUCIÓN
 def normalizar_institucion(v):
     v = str(v).lower()
-    if "colima" in v:
-        return "Universidad de Colima"
-    elif "aten" in v:
-        return "Colegio Ateneo"
-    elif "ad" in v or "adonai" in v:
-        return "Instituto Adonai"
-    elif "isenco" in v:
-        return "ISENCO"
-    elif "icep" in v:
-        return "ICEP"
-    elif "privada" in v:
-        return "Universidad Privada"
-    elif "cetis" in v or "cbtis" in v or "cbta" in v:
-        return "Bachillerato Profesionalizante"
-    else:
-        return v.strip().capitalize()
+    if "colima" in v: return "Universidad de Colima"
+    elif "aten" in v: return "Colegio Ateneo"
+    elif "adonai" in v: return "Instituto Adonai"
+    elif "isenco" in v: return "ISENCO"
+    elif "icep" in v: return "ICEP"
+    elif "privada" in v: return "Universidad Privada"
+    elif "cetis" in v or "cbtis" in v or "cbta" in v: return "Bachillerato Profesionalizante"
+    else: return v.strip().capitalize()
 
 def normalizar_municipio(v):
     v = str(v).lower()
-    if "colima" in v:
-        return "Colima"
-    elif "villa" in v:
-        return "Villa de Álvarez"
-    elif "cuauhtemoc" in v or "cuahutemoc" in v:
-        return "Cuauhtémoc"
-    elif "comala" in v:
-        return "Comala"
-    elif "manzanillo" in v:
-        return "Manzanillo"
-    elif "tecoman" in v:
-        return "Tecomán"
-    elif "aquila" in v:
-        return "Aquila"
-    elif "tonila" in v:
-        return "Tonila"
-    else:
-        return v.strip().capitalize()
+    if "colima" in v: return "Colima"
+    elif "villa" in v: return "Villa de Álvarez"
+    elif "cuauhtemoc" in v or "cuahutemoc" in v: return "Cuauhtémoc"
+    elif "comala" in v: return "Comala"
+    elif "manzanillo" in v: return "Manzanillo"
+    elif "tecoman" in v: return "Tecomán"
+    elif "aquila" in v: return "Aquila"
+    elif "tonila" in v: return "Tonila"
+    else: return v.strip().capitalize()
 
 df['Municipio_Normalizado'] = df['Municipio donde vive actualmente'].apply(normalizar_municipio)
 df['Institucion_Normalizada'] = df['¿De qué institución académica egresaste?'].apply(normalizar_institucion)
 
-# 3️⃣ Conversiones
+# ✅ 3️⃣ Conversión de rangos
 def convertir_rango(v):
     if pd.isna(v): return np.nan
     v = str(v).lower()
     if "menos de" in v:
-        num = [float(s) for s in v.split() if s.replace('.', '', 1).isdigit()]
-        return num[0]/2 if num else np.nan
+        nums = [float(s) for s in v.split() if s.replace('.', '', 1).isdigit()]
+        return nums[0]/2 if nums else np.nan
     if "a" in v:
-        partes = v.split("a")
         try:
-            minimo = float(partes[0].strip())
-            maximo = float(partes[1].split()[0].strip())
-            return (minimo + maximo)/2
+            partes = v.split("a")
+            return (float(partes[0].strip()) + float(partes[1].split()[0].strip()))/2
         except: return np.nan
     if "más de" in v: return 23
     try: return float(v)
@@ -86,7 +67,7 @@ df['Tiempo_Desplazamiento_Num'] = df['¿Cuánto tiempo le toma desplazarse a pie
 df['Tiempo_Estudio_Num'] = df['¿Cuántas horas al día dedica a estudiar fuera del aula?'].apply(convertir_rango)
 df['Triste_Num'] = df['En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o triste?'].apply(convertir_rango)
 
-# 4️⃣ Pasteles
+# ✅ 4️⃣ Gráficas de pastel
 columnas_pastel = [
     'Seleccione su sexo',
     'Municipio_Normalizado',
@@ -109,7 +90,7 @@ for col in columnas_pastel:
         ax.pie(conteo['Conteo'], labels=conteo['Categoria'], autopct='%1.1f%%')
         st.pyplot(fig)
 
-# 5️⃣ Outliers
+# ✅ 5️⃣ Outliers
 for col in ['Edad_Num', 'Promedio_Num', 'Tiempo_Desplazamiento_Num', 'Tiempo_Estudio_Num', 'Triste_Num']:
     datos = df[[col]].dropna()
     if datos.empty: continue
@@ -123,4 +104,4 @@ for col in ['Edad_Num', 'Promedio_Num', 'Tiempo_Desplazamiento_Num', 'Tiempo_Est
     if not outliers.empty:
         st.warning(outliers)
     else:
-        st.success("✅ Sin atípicos")
+        st.success("✅ Sin datos atípicos")
