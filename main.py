@@ -15,11 +15,11 @@ st.markdown("""
 # ==========================
 # VINCULO GOOGLE SHEETS CSV
 # ==========================
-url = "https://docs.google.com/spreadsheets/d/1LDJFoULKkL5CzjUokGvbFYPeZewMJBAoTGq8i-4XhNY/edit?usp=sharing"  # Reemplaza con tu enlace CSV
+url = "import pandas as pd
+    
+url = "https://docs.google.com/spreadsheets/d/e/<ID>/pub?output=csv"
 df = pd.read_csv(url)
-st.success("✅ Datos cargados directamente desde Google Sheets (en tiempo real).")
-st.subheader("📊 Vista previa de los datos")
-st.dataframe(df)
+print(df.head())
 
 # ==========================
 # VALIDAR ENCABEZADOS
