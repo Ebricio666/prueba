@@ -28,7 +28,53 @@ st.success("✅ Datos cargados desde Google Sheets")
 st.dataframe(df.head())
 
 # -----------------------------------------------
-# 📌 FUNCIONES PARA NORMALIZAR RANGOS
+# 📌 AGRUPAR MUNICIPIOS
+# -----------------------------------------------
+def agrupar_municipio(valor):
+    valor = str(valor).lower().strip()
+    if "villa" in valor:
+        return "Villa de Álvarez"
+    elif "col" in valor:
+        return "Colima"
+    elif "cuau" in valor:
+        return "Cuauhtémoc"
+    elif "comala" in valor:
+        return "Comala"
+    elif "manzanillo" in valor:
+        return "Manzanillo"
+    elif "tecoman" in valor:
+        return "Tecomán"
+    elif "coquimat" in valor:
+        return "Coquimatlán"
+    elif "aquila" in valor:
+        return "Aquila"
+    elif "tonila" in valor:
+        return "Tonila"
+    else:
+        return valor.title()
+
+df["Municipio Agrupado"] = df["Municipio donde vive actualmente"].apply(agrupar_municipio)
+
+# -----------------------------------------------
+# 📌 AGRUPAR BACHILLERATO DE PROCEDENCIA
+# -----------------------------------------------
+def agrupar_bachillerato(valor):
+    valor = str(valor).lower().strip()
+    if "u de colima" in valor or "universidad de colima" in valor:
+        return "Bachillerato U de Colima"
+    elif "cetis" in valor or "cbtis" in valor or "cobaem" in valor or "cbta" in valor or "tele" in valor or "emsad" in valor:
+        return "Bachillerato Tecnológico / Telebachillerato"
+    elif "isenco" in valor:
+        return "ISENCO"
+    elif "privada" in valor or "tec de monterrey" in valor or "anahuac" in valor or "vizcaya" in valor:
+        return "Universidad Privada"
+    else:
+        return valor.title()
+
+df["Bachillerato Agrupado"] = df["¿De qué institución académica egresaste?"].apply(agrupar_bachillerato)
+
+# -----------------------------------------------
+# 📌 CONVERSIÓN DE RANGOS
 # -----------------------------------------------
 def convertir_rango(valor):
     if pd.isna(valor):
@@ -50,9 +96,6 @@ def convertir_rango(valor):
     nums = re.findall(r'\d+\.?\d*', valor)
     return float(nums[0]) if nums else np.nan
 
-# -----------------------------------------------
-# 📌 APLICAR CONVERSIÓN A COLUMNAS CLAVE
-# -----------------------------------------------
 df["Edad_Num"] = df["Edad en años cumplidos"].apply(convertir_rango)
 df["Desplazamiento_Num"] = df["¿Cuánto tiempo le toma desplazarse a pie o vehículo público o privado del lugar donde vive a esta Institución Académica?"].apply(convertir_rango)
 df["Promedio_Num"] = df["¿Cuál fue tu promedio de calificación del tercer año de bachillerato?"].apply(convertir_rango)
@@ -60,7 +103,7 @@ df["Horas_Estudio_Num"] = df["¿Cuántas horas al día dedica a estudiar fuera d
 df["Triste_Num"] = df["En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o triste?"].apply(convertir_rango)
 
 # -----------------------------------------------
-# 📌 FUNCIONES PARA DETECCIÓN DE ATÍPICOS
+# 📌 DETECTAR OUTLIERS
 # -----------------------------------------------
 def detectar_outliers(df, col):
     datos = df[col].dropna()
@@ -72,9 +115,6 @@ def detectar_outliers(df, col):
     outliers = df[(df[col] < lower) | (df[col] > upper)]
     return outliers, lower, upper
 
-# -----------------------------------------------
-# 📌 MOSTRAR OUTLIERS
-# -----------------------------------------------
 st.subheader("🔎 Datos Atípicos")
 columnas = ["Edad_Num", "Desplazamiento_Num", "Promedio_Num", "Horas_Estudio_Num", "Triste_Num"]
 outliers_total = pd.DataFrame()
@@ -93,8 +133,8 @@ st.subheader("🥧 Diagramas de Pastel")
 columnas_categoricas = [
     "Seleccione su sexo",
     "¿A qué carrera desea ingresar?",
-    "Municipio donde vive actualmente",
-    "¿De qué institución académica egresaste?",
+    "Municipio Agrupado",
+    "Bachillerato Agrupado",
     "Actualmente, ¿realiza trabajo remunerado?",
     "¿Cuenta con un lugar adecuado para estudiar en casa?",
     "¿Tengo acceso a internet y computadora en casa?",
