@@ -138,7 +138,7 @@ if uploaded_file:
             return np.nan
 
     # ==========================
-    # APLICAR CONVERSIONES
+    # APLICAR CONVERSIONES CON ENCABEZADOS LARGOS
     # ==========================
     if "¿Cuál fue tu promedio de calificación del tercer año de bachillerato?" in df.columns:
         df["Promedio_Num"] = df["¿Cuál fue tu promedio de calificación del tercer año de bachillerato?"].apply(convertir_rango_promedio)
@@ -156,18 +156,23 @@ if uploaded_file:
     # VARIABLES CATEGÓRICAS CON DIAGRAMA DE PASTEL
     # ==========================
     columnas_categoricas = [
-        "Seleccione su sexo", "Edad en años cumplidos", "¿A qué carrera desea ingresar?",
-        "Municipio donde vive actualmente", "En este momento, usted",
+        "Seleccione su sexo",
+        "Edad en años cumplidos",
+        "¿A qué carrera desea ingresar?",
+        "Municipio donde vive actualmente",
+        "En este momento, usted",
         "¿Cuánto tiempo le toma desplazarse a pie o vehículo público o privado del lugar donde vive a esta Institución Académica?",
-        "Actualmente, ¿realiza trabajo remunerado?", "¿Quién lo ha apoyado económicamente en sus estudios previos?",
-        "¿De qué institución académica egresaste?", "¿Cuál fue tu promedio de calificación del tercer año de bachillerato?",
-        "¿Cuántas horas al día dedica a estudiar fuera del aula?", "En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o triste?",
-        "¿Cuenta con un lugar adecuado para estudiar en casa?", "¿Tengo acceso a internet y computadora en casa?",
+        "Actualmente, ¿realiza trabajo remunerado?",
+        "¿Quién lo ha apoyado económicamente en sus estudios previos?",
+        "¿De qué institución académica egresaste?",
+        "¿Cuál fue tu promedio de calificación del tercer año de bachillerato?",
+        "¿Cuántas horas al día dedica a estudiar fuera del aula?",
+        "En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o triste?",
+        "¿Cuenta con un lugar adecuado para estudiar en casa?",
+        "¿Tengo acceso a internet y computadora en casa?",
         "En el último año, ¿ha acudido a consulta por atención psicológica?",
         "¿Cuenta con personas que lo motivan o apoyan a continuar su carrera?"
     ]
-
-    columnas_categoricas = list(dict.fromkeys(columnas_categoricas))
 
     for col in columnas_categoricas:
         if col not in df.columns:
@@ -201,7 +206,6 @@ if uploaded_file:
     columnas_continuas = [
         "Edad en años cumplidos",
         "Promedio_Num",
-        "Tiempo estudio",
         "Tiempo_desplazamiento_Num",
         "Tiempo_Num",
         "Triste_Num"
