@@ -1,186 +1,144 @@
+# app.py
+
 import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-# ========================================
-# 🔗 CONFIGURACIÓN GENERAL
-# ========================================
 st.set_page_config(layout="wide")
 
-st.title("📊 Reporte Demográfico y de Oportunidades de Mejora")
+# ==========================
+# TÍTULO Y LEYENDA
+# ==========================
 st.markdown("""
-**Instituto Tecnológico de Colima 2025**  
+# Reporte gráfico de datos demográficos y áreas de oportunidad de los aspirantes al ingreso a las diversas carreras del Instituto Tecnológico de Colima 2025
+
 **Elaborado por:** Dra. Elena Elsa Bricio-Barrios, Dr. Santiago Arceo-Díaz y Psicóloga Martha Cecilia Ramírez-Guzmán
 """)
 
-# ========================================
-# 🔗 CARGA DE DATOS DESDE GOOGLE SHEETS
-# ========================================
-url_csv = "https://docs.google.com/spreadsheets/d/1LDJFoULKkL5CzjUokGvbFYPeZewMJBAoTGq8i-4XhNY/export?format=csv"
-df = pd.read_csv(url_csv)
+# ==========================
+# URL DE GOOGLE SHEETS
+# ==========================
+# Asegúrate de usar tu URL publicada correctamente como CSV
+url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTv7vibXy0mBSYxxxxxx/pub?output=csv"
+df = pd.read_csv(url)
 
-st.success(f"✅ Datos cargados correctamente ({len(df)} registros).")
+st.success("✅ Datos cargados correctamente desde Google Sheets.")
 st.dataframe(df.head())
 
-# ========================================
-# 🧹 NORMALIZAR MUNICIPIOS
-# ========================================
-df['Municipio_Base'] = df['Municipio donde vive actualmente'].str.lower().str.strip()
+# ==========================
+# NORMALIZAR INSTITUCIÓN
+# ==========================
+def normalizar_institucion(valor):
+    valor = str(valor).lower().strip()
+    if 'colima' in valor:
+        return "Universidad de Colima"
+    elif 'ateneo' in valor:
+        return "Colegio Ateneo"
+    elif 'adonia' in valor or 'adonai' in valor:
+        return "Instituto Adonai"
+    elif 'icep' in valor:
+        return "ICEP"
+    elif 'isenco' in valor:
+        return "ISENCO"
+    elif 'cbtis' in valor or 'cetis' in valor:
+        return "Bachillerato profesionalizante"
+    elif 'tecnico' in valor:
+        return "Universidad de Colima"
+    elif 'univa' in valor or 'tec' in valor or 'privada' in valor:
+        return "Universidad Privada"
+    else:
+        return "Otro"
 
-condiciones = [
-    df['Municipio_Base'].str.contains(r'\bcolima\b|colima colima|colima\.colima|colima, colima|colima,col|colima\. col', na=False),
-    df['Municipio_Base'].str.contains(r'villa.*álvarez|villa.*alvarez|villa dr alvarez|villa de alvares|villa de álvares', na=False),
-    df['Municipio_Base'].str.contains(r'cuauht[eé]moc|cuahutemoc|cuauthemoc', na=False),
-    df['Municipio_Base'].str.contains(r'comala|zacualpan|suchitlan', na=False),
-    df['Municipio_Base'].str.contains(r'manzanillo|bahía de manzanillo', na=False),
-    df['Municipio_Base'].str.contains(r'tecom[aá]n', na=False),
-    df['Municipio_Base'].str.contains(r'tonila', na=False),
-    df['Municipio_Base'].str.contains(r'aquila', na=False),
-    df['Municipio_Base'].str.contains(r'coahuayana', na=False),
-    df['Municipio_Base'].str.contains(r'coquimatl[aá]n|coquimatlan', na=False)
-]
+df['Institucion_Normalizada'] = df['¿De qué institución académica egresaste?'].apply(normalizar_institucion)
 
-resultados = [
-    'Colima',
-    'Villa de Álvarez',
-    'Cuauhtémoc',
-    'Comala',
-    'Manzanillo',
-    'Tecomán',
-    'Tonila',
-    'Aquila',
-    'Coahuayana',
-    'Coquimatlán'
-]
+# ==========================
+# NORMALIZAR MUNICIPIO
+# ==========================
+def normalizar_municipio(valor):
+    valor = str(valor).lower().strip()
+    if 'villa' in valor:
+        return "Villa de Álvarez"
+    elif 'colima' in valor:
+        return "Colima"
+    elif 'coquimatlan' in valor:
+        return "Coquimatlán"
+    elif 'cuauhtemoc' in valor or 'cuahutemoc' in valor:
+        return "Cuauhtémoc"
+    elif 'manzanillo' in valor:
+        return "Manzanillo"
+    elif 'tecoman' in valor:
+        return "Tecomán"
+    elif 'comala' in valor:
+        return "Comala"
+    elif 'aquila' in valor:
+        return "Aquila"
+    elif 'tonila' in valor:
+        return "Tonila"
+    else:
+        return "Otro"
 
-df['Municipio_Normalizado'] = np.select(condiciones, resultados, default='Otro')
+df['Municipio_Normalizado'] = df['Municipio donde vive actualmente'].apply(normalizar_municipio)
 
-# ========================================
-# ✅ CONTEO NORMALIZADO
-# ========================================
-st.subheader("📌 Municipios Normalizados")
-st.dataframe(df[['Municipio donde vive actualmente', 'Municipio_Normalizado']].drop_duplicates().sort_values('Municipio_Normalizado'))
-
-conteo_mun = df['Municipio_Normalizado'].value_counts().reset_index()
-conteo_mun.columns = ['Municipio_Normalizado', 'Cantidad']
-
-st.subheader("📊 Conteo de Municipios")
-st.dataframe(conteo_mun)
-
-fig1, ax1 = plt.subplots(figsize=(6, 6))
-ax1.pie(conteo_mun['Cantidad'], labels=conteo_mun['Municipio_Normalizado'], autopct='%1.1f%%', startangle=90)
-ax1.axis('equal')
-st.pyplot(fig1)
-
-# ========================================
-# ⚡ NORMALIZAR INSTITUCIÓN (EJEMPLO)
-# ========================================
-df['Institucion_Base'] = df['¿De qué institución académica egresaste?'].str.lower().str.strip()
-
-cond_institucion = [
-    df['Institucion_Base'].str.contains(r'colima', na=False),
-    df['Institucion_Base'].str.contains(r'ateneo', na=False),
-    df['Institucion_Base'].str.contains(r'isenco', na=False),
-    df['Institucion_Base'].str.contains(r'icep', na=False),
-    df['Institucion_Base'].str.contains(r'ctys|cbtis|cetis|bachillerato profesionalizante', na=False),
-    df['Institucion_Base'].str.contains(r'universidad privada|tec|univa|martí|jose marti', na=False)
-]
-
-res_institucion = [
-    'Universidad de Colima',
-    'Ateneo',
-    'ISENCO',
-    'ICEP',
-    'Bachillerato Profesionalizante',
-    'Universidad Privada'
-]
-
-df['Institucion_Normalizada'] = np.select(cond_institucion, res_institucion, default='Otro')
-
-st.subheader("🏫 Instituciones Normalizadas")
-st.dataframe(df[['¿De qué institución académica egresaste?', 'Institucion_Normalizada']].drop_duplicates().sort_values('Institucion_Normalizada'))
-
-conteo_inst = df['Institucion_Normalizada'].value_counts().reset_index()
-conteo_inst.columns = ['Institucion_Normalizada', 'Cantidad']
-
-fig2, ax2 = plt.subplots(figsize=(6, 6))
-ax2.pie(conteo_inst['Cantidad'], labels=conteo_inst['Institucion_Normalizada'], autopct='%1.1f%%', startangle=90)
-ax2.axis('equal')
-st.pyplot(fig2)
-
-# ========================================
-# 📊 OTRAS VARIABLES CATEGÓRICAS
-# ========================================
-columnas_categoricas = [
-    "Seleccione su sexo",
-    "¿A qué carrera desea ingresar?",
-    "¿Quién lo ha apoyado económicamente en sus estudios previos?",
-    "¿Cuenta con un lugar adecuado para estudiar en casa?",
-    "¿Tengo acceso a internet y computadora en casa?",
-    "En el último año, ¿ha acudido a consulta por atención psicológica?",
-    "¿Cuenta con personas que lo motivan o apoyan a continuar su carrera?"
-]
-
-for col in columnas_categoricas:
-    if col not in df.columns:
-        continue
-
-    st.subheader(f"🥧 Distribución: {col}")
-
-    conteo = df[col].value_counts().reset_index()
-    fig, ax = plt.subplots(figsize=(5, 5))
-    ax.pie(conteo[col], labels=conteo['index'], autopct='%1.1f%%', startangle=90)
-    ax.axis('equal')
-    st.pyplot(fig)
-
-# ========================================
-# 📌 VARIABLES CONTINUAS Y ATÍPICOS
-# ========================================
-def convertir_rango_general(valor):
+# ==========================
+# CONVERSIÓN DE VARIABLES NUMÉRICAS
+# ==========================
+def convertir_edad(valor):
     if pd.isna(valor):
         return np.nan
-    valor = str(valor).lower()
-    if "ninguna" in valor:
-        return 0
-    if "menos de" in valor:
-        num = [float(s) for s in valor.split() if s.replace('.', '', 1).isdigit()]
-        return num[0] / 2 if num else np.nan
-    if "a" in valor:
-        partes = valor.split("a")
-        try:
-            minimo = float(partes[0].strip())
-            maximo = float(partes[1].split()[0].strip())
-            return (minimo + maximo) / 2
-        except:
-            return np.nan
+    valor = str(valor).lower().strip()
+    if "más de" in valor or "mas de" in valor:
+        return 23
     try:
         return float(valor)
     except:
         return np.nan
 
-# Aplica conversión ejemplo
-if "En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o triste?" in df.columns:
-    df["Triste_Num"] = df["En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o triste?"].apply(convertir_rango_general)
+df["Edad_Num"] = df["Edad en años cumplidos"].apply(convertir_edad)
 
-col_continuas = ["Triste_Num"]
-for col in col_continuas:
+# ==========================
+# DIAGRAMAS DE PASTEL
+# ==========================
+st.markdown("## 📊 Distribución de Instituciones y Municipios (Normalizados)")
+
+columnas_categoricas = ['Institucion_Normalizada', 'Municipio_Normalizado']
+
+for col in columnas_categoricas:
+    st.markdown(f"### 🥧 {col}")
+    conteo = df[col].value_counts().reset_index()
+    value_col = conteo.columns[0]
+    count_col = conteo.columns[1]
+
+    fig, ax = plt.subplots(figsize=(6, 6))
+    ax.pie(conteo[count_col], labels=conteo[value_col], autopct='%1.1f%%', startangle=90)
+    ax.axis('equal')
+    st.pyplot(fig)
+
+# ==========================
+# ANÁLISIS DE DATOS ATÍPICOS
+# ==========================
+st.markdown("## 🔍 Detección de Datos Atípicos")
+
+columnas_numericas = ['Edad_Num']
+
+for col in columnas_numericas:
     if col not in df.columns:
         continue
 
-    st.subheader(f"🧩 Análisis de atípicos: {col}")
-    data = df[[col]].dropna()
-    Q1 = data[col].quantile(0.25)
-    Q3 = data[col].quantile(0.75)
+    data = df[col].dropna()
+    Q1 = data.quantile(0.25)
+    Q3 = data.quantile(0.75)
     IQR = Q3 - Q1
     lower = Q1 - 1.5 * IQR
     upper = Q3 + 1.5 * IQR
 
     outliers = df[(df[col] < lower) | (df[col] > upper)]
-    if not outliers.empty:
-        st.warning(f"⚠️ {len(outliers)} dato(s) atípico(s) encontrados en '{col}':")
-        st.dataframe(outliers)
-    else:
-        st.success(f"✅ No se encontraron datos atípicos en '{col}'.")
 
-st.markdown("**Fin del reporte.**")
+    st.markdown(f"### 📌 {col}")
+    if outliers.empty:
+        st.success(f"✅ No se encontraron datos atípicos en {col}.")
+    else:
+        st.warning(f"⚠️ Se encontraron {len(outliers)} datos atípicos en {col}:")
+        st.dataframe(outliers[[col]])
+
+st.success("🔗 Análisis completado correctamente.")
