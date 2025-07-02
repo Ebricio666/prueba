@@ -107,11 +107,12 @@ for col in columnas_categoricas:
         total = conteo.sum()
 
         labels = [f"{cat}" for cat in conteo.index]
+
         def autopct(p):
             count = int(round(p * total / 100))
             return f'{p:.1f}%\n({count})'
 
-        st.subheader(f"📌 {col}")  # ENCABEZADO ANTES DEL GRÁFICO
+        st.subheader(f"📌 {col}")
 
         fig, ax = plt.subplots(figsize=(6, 6))
         wedges, texts, autotexts = ax.pie(
@@ -124,6 +125,14 @@ for col in columnas_categoricas:
         ax.axis('equal')
         ax.set_title(f"{col}", fontsize=12)
         st.pyplot(fig)
+
+        # Mostrar tabla de colores y cantidades
+        st.write("**🔑 Leyenda de categorías:**")
+        legend_data = pd.DataFrame({
+            'Categoría': conteo.index,
+            'Cantidad': conteo.values
+        })
+        st.dataframe(legend_data)
 
 # ============================================
 # 📌 DETECCIÓN DE DATOS ATÍPICOS
@@ -162,7 +171,7 @@ if st.button("Generar PDF"):
     pdf.multi_cell(0, 10, "Este PDF es un resumen con:\n"
                           "- Top 13 Municipios + Otros\n"
                           "- Top 4 Bachilleratos + Otros\n"
-                          "- Diagramas de pastel con labels claros y porcentaje + número de personas.\n"
+                          "- Diagramas de pastel con preguntas y leyendas de categorías.\n"
                           "- Tabla de datos atípicos por variable numérica.")
 
     pdf.output("reporte_ITColima.pdf")
