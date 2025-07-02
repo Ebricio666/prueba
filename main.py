@@ -3,7 +3,11 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 
+url = "https://docs.google.com/spreadsheets/d/e/....../pub?output=csv"
+df = pd.read_csv(url)
+st.dataframe(df)
 st.set_page_config(layout="wide")
 
 st.markdown("""
