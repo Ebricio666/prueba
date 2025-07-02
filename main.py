@@ -4,22 +4,22 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Configuración general
 st.set_page_config(layout="wide")
 
-# Título e información institucional
 st.markdown("""
 # Reporte gráfico de datos demográficos y áreas de oportunidad de los aspirantes al ingreso a las diversas carreras del Instituto Tecnológico de Colima 2025  
 **Elaborado por:** Dra. Elena Elsa Bricio-Barrios, Dr. Santiago Arceo-Díaz y Psicóloga Martha Cecilia Ramírez-Guzmán
 """)
 
 # ==========================
-# VINCULO GOOGLE SHEETS CSV
+# VÍNCULO A GOOGLE SHEETS PUBLICADO COMO CSV
 # ==========================
-url = "import pandas as pd
-    
-url = "https://docs.google.com/spreadsheets/d/e/<ID>/pub?output=csv"
+url = "https://docs.google.com/spreadsheets/d/e/1FAIpQLSchnVz-rXEh1IZJa68zfZRt4LkSob6v2wWXfZgYhfIfMyAoHw/pub?output=csv"  # ⚠️ Cambia aquí por tu enlace publicado correctamente
 df = pd.read_csv(url)
-print(df.head())
+st.success("✅ Datos cargados directamente desde Google Sheets (en tiempo real).")
+st.subheader("📊 Vista previa de los datos")
+st.dataframe(df)
 
 # ==========================
 # VALIDAR ENCABEZADOS
@@ -69,7 +69,7 @@ def convertir_edad(valor):
         return np.nan
     valor = str(valor).lower().strip()
     if "más de" in valor or "mas de" in valor:
-        return 23
+        return 23  # Ajusta este valor a tu criterio
     try:
         return float(valor)
     except:
@@ -158,7 +158,5 @@ if "En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o tri
     df["Triste_Num"] = df["En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o triste?"].apply(convertir_rango_general)
 
 # ==========================
-# CONTINÚA CON TU ANÁLISIS...
+# Continúa con tu bloque de análisis...
 # ==========================
-# Tu bloque de pastel y outliers se queda igual
-# ...
