@@ -86,7 +86,7 @@ df["Horas_Estudio_Num"] = df["¿Cuántas horas al día dedica a estudiar fuera d
 df["Triste_Num"] = df["En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o triste?"].apply(convertir_rango)
 
 # ============================================
-# 📌 DIAGRAMAS DE PASTEL
+# 📌 DIAGRAMAS DE PASTEL CON LEYENDA TIPO EJEMPLO
 # ============================================
 st.header("🥧 Diagramas de Pastel")
 
@@ -105,34 +105,33 @@ for col in columnas_categoricas:
     if col in df.columns:
         conteo = df[col].value_counts().sort_index()
         total = conteo.sum()
+        sizes = conteo.values
+        categorias = conteo.index.tolist()
 
-        labels = [f"{cat}" for cat in conteo.index]
-
-        def autopct(p):
-            count = int(round(p * total / 100))
-            return f'{p:.1f}%\n({count})'
-
-        st.subheader(f"📌 {col}")
+        st.subheader(f"📌 {col}")  # ENCABEZADO ANTES DEL GRÁFICO
 
         fig, ax = plt.subplots(figsize=(6, 6))
         wedges, texts, autotexts = ax.pie(
-            conteo,
-            labels=labels,
-            autopct=autopct,
+            sizes,
+            labels=None,  # Nada dentro del gráfico
+            autopct='%1.0f%%',
             startangle=90,
             wedgeprops={'linewidth': 1, 'edgecolor': 'white'}
         )
-        ax.axis('equal')
-        ax.set_title(f"{col}", fontsize=12)
-        st.pyplot(fig)
 
-        # Mostrar tabla de colores y cantidades
-        st.write("**🔑 Leyenda de categorías:**")
-        legend_data = pd.DataFrame({
-            'Categoría': conteo.index,
-            'Cantidad': conteo.values
-        })
-        st.dataframe(legend_data)
+        ax.set_title(col, fontsize=14)
+        ax.axis('equal')
+
+        legend_labels = [f"{cat} ({num})" for cat, num in zip(categorias, sizes)]
+        ax.legend(
+            wedges,
+            legend_labels,
+            title="Categorías",
+            loc="center left",
+            bbox_to_anchor=(1, 0.5)
+        )
+
+        st.pyplot(fig)
 
 # ============================================
 # 📌 DETECCIÓN DE DATOS ATÍPICOS
@@ -171,7 +170,7 @@ if st.button("Generar PDF"):
     pdf.multi_cell(0, 10, "Este PDF es un resumen con:\n"
                           "- Top 13 Municipios + Otros\n"
                           "- Top 4 Bachilleratos + Otros\n"
-                          "- Diagramas de pastel con preguntas y leyendas de categorías.\n"
+                          "- Diagramas de pastel con leyenda tipo ejemplo\n"
                           "- Tabla de datos atípicos por variable numérica.")
 
     pdf.output("reporte_ITColima.pdf")
