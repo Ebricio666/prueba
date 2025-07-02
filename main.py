@@ -27,7 +27,7 @@ st.success("✅ Datos cargados correctamente")
 st.dataframe(df.head())
 
 # ============================================
-# 📌 AGRUPAR MUNICIPIO: Top 13 + Otros
+# 📌 AGRUPAR MUNICIPIOS: Top 13 + Otros
 # ============================================
 municipios_top = df['Municipio donde vive actualmente'].value_counts().nlargest(13).index.tolist()
 
@@ -40,7 +40,7 @@ def agrupar_municipio(x):
 df["Municipio Agrupado"] = df["Municipio donde vive actualmente"].apply(agrupar_municipio)
 
 # ============================================
-# 📌 AGRUPAR BACHILLERATO: Top 4 + Otros
+# 📌 AGRUPAR BACHILLERATOS: Top 4 + Otros
 # ============================================
 bachilleratos_top = df['¿De qué institución académica egresaste?'].value_counts().nlargest(4).index.tolist()
 
@@ -86,9 +86,9 @@ df["Horas_Estudio_Num"] = df["¿Cuántas horas al día dedica a estudiar fuera d
 df["Triste_Num"] = df["En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o triste?"].apply(convertir_rango)
 
 # ============================================
-# 📌 DIAGRAMAS DE PASTEL CON ETIQUETAS DETALLADAS
+# 📌 DIAGRAMAS DE PASTEL
 # ============================================
-st.header("🥧 Diagramas de Pastel con etiquetas y cantidad de estudiantes")
+st.header("🥧 Diagramas de Pastel con labels y etiquetas")
 
 columnas_categoricas = [
     "Seleccione su sexo",
@@ -106,17 +106,19 @@ for col in columnas_categoricas:
         conteo = df[col].value_counts().sort_index()
         porcentaje = (conteo / conteo.sum()) * 100
 
-        labels = [f"{cat}\n({conteo[cat]} estudiantes)\n{porcentaje[cat]:.1f}%" for cat in conteo.index]
+        labels = [f"{cat}" for cat in conteo.index]
+        autopct = lambda p: f'{p:.1f}%\n({int(round(p * conteo.sum() / 100))} estudiantes)'
 
         fig, ax = plt.subplots(figsize=(6, 6))
-        wedges, texts = ax.pie(
+        wedges, texts, autotexts = ax.pie(
             conteo,
             labels=labels,
+            autopct=autopct,
             startangle=90,
             wedgeprops={'linewidth': 1, 'edgecolor': 'white'}
         )
         ax.axis('equal')
-        ax.set_title(f"Distribución: {col}", fontsize=12)
+        ax.set_title(f"{col}", fontsize=12)
         st.pyplot(fig)
 
 # ============================================
@@ -154,9 +156,10 @@ if st.button("Generar PDF"):
     pdf.cell(200, 10, txt="📊 Reporte ITColima 2025", ln=True, align='C')
 
     pdf.multi_cell(0, 10, "Este PDF es un resumen con:\n"
-                          f"- Municipios Top 13 + Otros\n"
-                          f"- Bachilleratos Top 4 + Otros\n"
-                          "Para gráficas detalladas, usa la versión interactiva de esta app.\n")
+                          "- Top 13 Municipios + Otros\n"
+                          "- Top 4 Bachilleratos + Otros\n"
+                          "Los diagramas de pastel contienen el label de la categoría "
+                          "y dentro cada sector el porcentaje y número de estudiantes.")
 
     pdf.output("reporte_ITColima.pdf")
     st.success("✅ PDF generado como 'reporte_ITColima.pdf'. Descárgalo desde tu carpeta local.")
