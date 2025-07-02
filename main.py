@@ -73,6 +73,17 @@ if uploaded_file:
     # ==========================
     # FUNCIONES PARA CONVERTIR RANGOS
     # ==========================
+    def convertir_edad(valor):
+        if pd.isna(valor):
+            return np.nan
+        valor = str(valor).lower().strip()
+        if "más de" in valor or "mas de" in valor:
+            return 23  # Puedes ajustar este valor según tu criterio
+        try:
+            return float(valor)
+        except:
+            return np.nan
+
     def convertir_rango_promedio(valor):
         if pd.isna(valor):
             return np.nan
@@ -138,8 +149,11 @@ if uploaded_file:
             return np.nan
 
     # ==========================
-    # APLICAR CONVERSIONES CON ENCABEZADOS LARGOS
+    # APLICAR CONVERSIONES
     # ==========================
+    if "Edad en años cumplidos" in df.columns:
+        df["Edad en años cumplidos"] = df["Edad en años cumplidos"].apply(convertir_edad)
+
     if "¿Cuál fue tu promedio de calificación del tercer año de bachillerato?" in df.columns:
         df["Promedio_Num"] = df["¿Cuál fue tu promedio de calificación del tercer año de bachillerato?"].apply(convertir_rango_promedio)
 
