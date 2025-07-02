@@ -35,12 +35,28 @@ if uploaded_file:
         st.success("✅ No hay encabezados duplicados.")
 
     encabezados_esperados = [
-        "Fecha", "Homoclave del docente", "Correo", "Carrera", "Nombre",
-        "Sexo", "Edad", "Lugar donde vive", "¿Vive con?",
-        "Tiempo de desplazamiento", "Trabaja", "Bachillerato", "Promedio",
-        "Tel de contacto", "Alergia", "Enfermedades", "Grupo sanguíneo",
-        "Espacio para trabajar", "Acceso a internet y pc", "Tiempo estudio",
-        "Tiempo", "Triste", "Psicologo", "Apoyo carrera"
+        "Dirección de correo electrónico",
+        "¿A qué carrera desea ingresar?",
+        "Ingrese su nombre completo",
+        "Seleccione su sexo",
+        "Edad en años cumplidos",
+        "Municipio donde vive actualmente",
+        "En este momento, usted",
+        "¿Cuánto tiempo le toma desplazarse a pie o vehículo público o privado del lugar donde vive a esta Institución Académica?",
+        "Actualmente, ¿realiza trabajo remunerado?",
+        "¿Quién lo ha apoyado económicamente en sus estudios previos?",
+        "¿De qué institución académica egresaste?",
+        "¿Cuál fue tu promedio de calificación del tercer año de bachillerato?",
+        "Nombre y número de teléfono del tutor o persona de confianza a quien contactar en caso de emergencia",
+        "Si tiene alguna alergia, escríbalo",
+        "Si tiene alguna enfermedad o síndrome, escríbano",
+        "Si conoce su grupo sanguíneo, escríbano",
+        "¿Cuenta con un lugar adecuado para estudiar en casa?",
+        "¿Tengo acceso a internet y computadora en casa?",
+        "¿Cuántas horas al día dedica a estudiar fuera del aula?",
+        "En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o triste?",
+        "En el último año, ¿ha acudido a consulta por atención psicológica?",
+        "¿Cuenta con personas que lo motivan o apoyan a continuar su carrera?"
     ]
 
     faltantes = [col for col in encabezados_esperados if col not in headers]
@@ -124,26 +140,31 @@ if uploaded_file:
     # ==========================
     # APLICAR CONVERSIONES
     # ==========================
-    if "Promedio" in df.columns:
-        df["Promedio_Num"] = df["Promedio"].apply(convertir_rango_promedio)
+    if "¿Cuál fue tu promedio de calificación del tercer año de bachillerato?" in df.columns:
+        df["Promedio_Num"] = df["¿Cuál fue tu promedio de calificación del tercer año de bachillerato?"].apply(convertir_rango_promedio)
 
-    if "Tiempo de desplazamiento" in df.columns:
-        df["Tiempo_desplazamiento_Num"] = df["Tiempo de desplazamiento"].apply(convertir_rango_tiempo_desplazamiento)
+    if "¿Cuánto tiempo le toma desplazarse a pie o vehículo público o privado del lugar donde vive a esta Institución Académica?" in df.columns:
+        df["Tiempo_desplazamiento_Num"] = df["¿Cuánto tiempo le toma desplazarse a pie o vehículo público o privado del lugar donde vive a esta Institución Académica?"].apply(convertir_rango_tiempo_desplazamiento)
 
-    if "Tiempo" in df.columns:
-        df["Tiempo_Num"] = df["Tiempo"].apply(convertir_rango_general)
+    if "¿Cuántas horas al día dedica a estudiar fuera del aula?" in df.columns:
+        df["Tiempo_Num"] = df["¿Cuántas horas al día dedica a estudiar fuera del aula?"].apply(convertir_rango_general)
 
-    if "Triste" in df.columns:
-        df["Triste_Num"] = df["Triste"].apply(convertir_rango_general)
+    if "En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o triste?" in df.columns:
+        df["Triste_Num"] = df["En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o triste?"].apply(convertir_rango_general)
 
     # ==========================
     # VARIABLES CATEGÓRICAS CON DIAGRAMA DE PASTEL
     # ==========================
     columnas_categoricas = [
-        "Sexo", "Edad", "Carrera", "Lugar donde vive", "¿Vive con?",
-        "Tiempo de desplazamiento", "Trabaja", "Bachillerato", "Promedio",
-        "Tiempo", "Triste", "Espacio para trabajar",
-        "Acceso a internet y pc", "Psicologo", "Apoyo carrera"
+        "Seleccione su sexo", "Edad en años cumplidos", "¿A qué carrera desea ingresar?",
+        "Municipio donde vive actualmente", "En este momento, usted",
+        "¿Cuánto tiempo le toma desplazarse a pie o vehículo público o privado del lugar donde vive a esta Institución Académica?",
+        "Actualmente, ¿realiza trabajo remunerado?", "¿Quién lo ha apoyado económicamente en sus estudios previos?",
+        "¿De qué institución académica egresaste?", "¿Cuál fue tu promedio de calificación del tercer año de bachillerato?",
+        "¿Cuántas horas al día dedica a estudiar fuera del aula?", "En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o triste?",
+        "¿Cuenta con un lugar adecuado para estudiar en casa?", "¿Tengo acceso a internet y computadora en casa?",
+        "En el último año, ¿ha acudido a consulta por atención psicológica?",
+        "¿Cuenta con personas que lo motivan o apoyan a continuar su carrera?"
     ]
 
     columnas_categoricas = list(dict.fromkeys(columnas_categoricas))
@@ -178,7 +199,7 @@ if uploaded_file:
     # VARIABLES CONTINUAS - SOLO MOSTRAR DATOS ATÍPICOS
     # ==========================
     columnas_continuas = [
-        "Edad",
+        "Edad en años cumplidos",
         "Promedio_Num",
         "Tiempo estudio",
         "Tiempo_desplazamiento_Num",
