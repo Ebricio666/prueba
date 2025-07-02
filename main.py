@@ -1,4 +1,7 @@
-# app.py
+# ============================================
+# app.py - Reporte Streamlit
+# ============================================
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -7,84 +10,61 @@ import matplotlib.pyplot as plt
 # ============================================
 # 📌 CONFIGURACIÓN Y TÍTULO
 # ============================================
+
 st.set_page_config(layout="wide")
 
 st.markdown("""
-# Reporte gráfico de datos demográficos y áreas de oportunidad de los aspirantes al ingreso a las diversas carreras del Instituto Tecnológico de Colima 2025  
+# 📊 Reporte gráfico de datos demográficos y áreas de oportunidad de los aspirantes 2025
+**Instituto Tecnológico de Colima**  
 **Elaborado por:** Dra. Elena Elsa Bricio-Barrios, Dr. Santiago Arceo-Díaz y Psicóloga Martha Cecilia Ramírez-Guzmán
 """)
 
 # ============================================
-# 📌 VÍNCULO A GOOGLE SHEETS PUBLICADO COMO CSV
+# 📌 VÍNCULO A GOOGLE SHEETS (publicado como CSV)
 # ============================================
+
 url = "https://docs.google.com/spreadsheets/d/1LDJFoULKkL5CzjUokGvbFYPeZewMJBAoTGq8i-4XhNY/export?format=csv"
 df = pd.read_csv(url)
 
-st.success("✅ Datos cargados en tiempo real desde Google Sheets.")
+st.success("✅ Datos cargados desde Google Sheets.")
 st.subheader("📊 Vista previa de los datos")
 st.dataframe(df)
 
 # ============================================
 # 📌 VALIDAR ENCABEZADOS
 # ============================================
-headers = df.columns.tolist()
-st.subheader("📌 Encabezados detectados:")
-st.write(headers)
 
 encabezados_esperados = [
-    "Dirección de correo electrónico",
-    "¿A qué carrera desea ingresar?",
-    "Ingrese su nombre completo",
-    "Seleccione su sexo",
-    "Edad en años cumplidos",
     "Municipio donde vive actualmente",
-    "En este momento, usted",
-    "¿Cuánto tiempo le toma desplazarse a pie o vehículo público o privado del lugar donde vive a esta Institución Académica?",
-    "Actualmente, ¿realiza trabajo remunerado?",
-    "¿Quién lo ha apoyado económicamente en sus estudios previos?",
     "¿De qué institución académica egresaste?",
+    "Edad en años cumplidos",
     "¿Cuál fue tu promedio de calificación del tercer año de bachillerato?",
-    "Nombre y número de teléfono del tutor o persona de confianza a quien contactar en caso de emergencia",
-    "Si tiene alguna alergia, escríbalo",
-    "Si tiene alguna enfermedad o síndrome, escríbano",
-    "Si conoce su grupo sanguíneo, escríbano",
-    "¿Cuenta con un lugar adecuado para estudiar en casa?",
-    "¿Tengo acceso a internet y computadora en casa?",
+    "¿Cuánto tiempo le toma desplazarse a pie o vehículo público o privado del lugar donde vive a esta Institución Académica?",
     "¿Cuántas horas al día dedica a estudiar fuera del aula?",
-    "En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o triste?",
-    "En el último año, ¿ha acudido a consulta por atención psicológica?",
-    "¿Cuenta con personas que lo motivan o apoyan a continuar su carrera?"
+    "En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o triste?"
 ]
 
-faltantes = [col for col in encabezados_esperados if col not in headers]
+st.subheader("📌 Encabezados detectados:")
+st.write(df.columns.tolist())
+
+faltantes = [col for col in encabezados_esperados if col not in df.columns]
 if faltantes:
-    st.warning("⚠️ Encabezados faltantes:")
-    for col in faltantes:
-        st.write(f"- {col}")
+    st.warning(f"⚠️ Encabezados faltantes: {faltantes}")
 else:
     st.success("✅ Todos los encabezados esperados están presentes.")
 
 # ============================================
 # 📌 FUNCIONES DE CONVERSIÓN
 # ============================================
-def convertir_edad(valor):
-    if pd.isna(valor):
-        return np.nan
-    valor = str(valor).lower().strip()
-    if "más de" in valor or "mas de" in valor:
-        return 23
-    try:
-        return float(valor)
-    except:
-        return np.nan
 
-def convertir_rango_promedio(valor):
+def convertir_rango(valor):
     if pd.isna(valor):
         return np.nan
-    if isinstance(valor, (int, float)):
-        return valor
-    if "a" in str(valor):
-        partes = str(valor).split("a")
+    v = str(valor).lower()
+    if "más de" in v or "mas de" in v:
+        return 23
+    if "a" in v:
+        partes = v.split("a")
         try:
             minimo = float(partes[0].strip())
             maximo = float(partes[1].strip())
@@ -92,156 +72,121 @@ def convertir_rango_promedio(valor):
         except:
             return np.nan
     try:
-        return float(valor)
-    except:
-        return np.nan
-
-def convertir_rango_tiempo_desplazamiento(valor):
-    if pd.isna(valor):
-        return np.nan
-    valor = str(valor).lower()
-    if "menos de" in valor:
-        try:
-            num = [int(s) for s in valor.split() if s.isdigit()][0]
-            return num / 2
-        except:
-            return np.nan
-    elif "de" in valor and "a" in valor:
-        partes = valor.replace("min", "").split("a")
-        try:
-            minimo = int(partes[0].split()[-1].strip())
-            maximo = int(partes[1].strip())
-            return (minimo + maximo) / 2
-        except:
-            return np.nan
-    else:
-        return np.nan
-
-def convertir_rango_general(valor):
-    if pd.isna(valor):
-        return np.nan
-    valor = str(valor).lower()
-    if "ninguna" in valor:
-        return 0
-    if "menos de" in valor:
-        try:
-            num = [float(s) for s in valor.split() if s.replace('.', '', 1).isdigit()][0]
-            return num / 2
-        except:
-            return np.nan
-    if "a" in valor:
-        partes = valor.split("a")
-        try:
-            minimo = float(partes[0].strip())
-            maximo = float(partes[1].split()[0].strip())
-            return (minimo + maximo) / 2
-        except:
-            return np.nan
-    try:
-        return float(valor)
+        return float(v)
     except:
         return np.nan
 
 # ============================================
-# 📌 APLICAR CONVERSIONES
+# 📌 NORMALIZACIÓN MUNICIPIO
 # ============================================
-if "Edad en años cumplidos" in df.columns:
-    df["Edad en años cumplidos"] = df["Edad en años cumplidos"].apply(convertir_edad)
 
-if "¿Cuál fue tu promedio de calificación del tercer año de bachillerato?" in df.columns:
-    df["Promedio_Num"] = df["¿Cuál fue tu promedio de calificación del tercer año de bachillerato?"].apply(convertir_rango_promedio)
-
-if "¿Cuánto tiempo le toma desplazarse a pie o vehículo público o privado del lugar donde vive a esta Institución Académica?" in df.columns:
-    df["Tiempo_desplazamiento_Num"] = df["¿Cuánto tiempo le toma desplazarse a pie o vehículo público o privado del lugar donde vive a esta Institución Académica?"].apply(convertir_rango_tiempo_desplazamiento)
-
-if "¿Cuántas horas al día dedica a estudiar fuera del aula?" in df.columns:
-    df["Tiempo_Num"] = df["¿Cuántas horas al día dedica a estudiar fuera del aula?"].apply(convertir_rango_general)
-
-if "En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o triste?" in df.columns:
-    df["Triste_Num"] = df["En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o triste?"].apply(convertir_rango_general)
+def normalizar_municipio(valor):
+    v = str(valor).lower().strip()
+    if "villa" in v:
+        return "Villa de Álvarez"
+    if "colima" in v:
+        return "Colima"
+    if "cuauhtemoc" in v or "cuahutemoc" in v:
+        return "Cuauhtémoc"
+    if "comala" in v or "zacualpan" in v or "suchitlan" in v:
+        return "Comala"
+    if "manzanillo" in v:
+        return "Manzanillo"
+    if "tecoman" in v:
+        return "Tecomán"
+    if "aquila" in v:
+        return "Aquila"
+    if "coahuayana" in v:
+        return "Coahuayana"
+    if "tonila" in v:
+        return "Tonila"
+    if "armeria" in v:
+        return "Armería"
+    if "minatitlan" in v:
+        return "Minatitlán"
+    if "tuxpan" in v:
+        return "Tuxpan"
+    if "trapiche" in v or "piscila" in v:
+        return "Colima"
+    if "la huerta" in v:
+        return "La Huerta"
+    if "coquimatlan" in v:
+        return "Coquimatlán"
+    if "queseria" in v:
+        return "Quesería"
+    return v.capitalize()
 
 # ============================================
-# 📊 GRÁFICAS DE PASTEL
+# 📌 NORMALIZACIÓN INSTITUCIÓN
 # ============================================
-columnas_categoricas = [
-    "Seleccione su sexo",
-    "Edad en años cumplidos",
-    "¿A qué carrera desea ingresar?",
-    "Municipio donde vive actualmente",
-    "En este momento, usted",
-    "¿Cuánto tiempo le toma desplazarse a pie o vehículo público o privado del lugar donde vive a esta Institución Académica?",
-    "Actualmente, ¿realiza trabajo remunerado?",
-    "¿Quién lo ha apoyado económicamente en sus estudios previos?",
-    "¿De qué institución académica egresaste?",
-    "¿Cuál fue tu promedio de calificación del tercer año de bachillerato?",
-    "¿Cuántas horas al día dedica a estudiar fuera del aula?",
-    "En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o triste?",
-    "¿Cuenta con un lugar adecuado para estudiar en casa?",
-    "¿Tengo acceso a internet y computadora en casa?",
-    "En el último año, ¿ha acudido a consulta por atención psicológica?",
-    "¿Cuenta con personas que lo motivan o apoyan a continuar su carrera?"
-]
 
-for col in columnas_categoricas:
-    if col not in df.columns:
-        continue
+def normalizar_institucion(valor):
+    v = str(valor).lower().strip()
+    if "universidad de colima" in v or "udc" in v:
+        return "Universidad de Colima"
+    if "ateneo" in v:
+        return "Colegio Ateneo"
+    if "adonai" in v:
+        return "Instituto Adonai"
+    if "isenco" in v:
+        return "ISENCO"
+    if "icep" in v:
+        return "ICEP"
+    if "vizcaya" in v:
+        return "Vizcaya"
+    if "univer" in v:
+        return "Universidad Privada"
+    if "tec de monterrey" in v or "univa" in v or "jose marti" in v or "privada" in v:
+        return "Universidad Privada"
+    if "cbtis" in v or "cetis" in v or "cobaem" in v or "emsad" in v or "cbta" in v or "telebachillerato" in v or "conalep" in v:
+        return "Bachillerato Profesionalizante"
+    if "fray pedro" in v:
+        return "Fray Pedro de Gante"
+    if "monte corona" in v:
+        return "Instituto Monte Corona"
+    if "anahuac" in v:
+        return "Colegio Anáhuac"
+    if "cedart" in v:
+        return "CEDART Juan Rulfo"
+    if "mojave high school" in v:
+        return "Bachillerato Extranjero"
+    return v.capitalize()
 
-    st.markdown(f"### 🥧 Distribución: {col}")
+# ============================================
+# 📌 APLICAR LIMPIEZAS
+# ============================================
 
-    conteo = df[col].value_counts(dropna=False).sort_index()
-    porcentaje = (conteo / conteo.sum()) * 100
+df["Municipio Normalizado"] = df["Municipio donde vive actualmente"].apply(normalizar_municipio)
+df["Institución Normalizada"] = df["¿De qué institución académica egresaste?"].apply(normalizar_institucion)
 
-    categorias_con_conteo = [f"{str(cat)} ({conteo[cat]})" for cat in conteo.index]
-    sizes = porcentaje.values
+# ============================================
+# 📊 PASTEL AGRUPADOS
+# ============================================
 
+for col in ["Municipio Normalizado", "Institución Normalizada"]:
+    st.subheader(f"Distribución: {col}")
+    conteo = df[col].value_counts()
     fig, ax = plt.subplots(figsize=(5, 5))
-    wedges, texts, autotexts = ax.pie(
-        sizes,
-        labels=None,
-        autopct="%1.1f%%",
-        startangle=90,
-        wedgeprops={'linewidth': 1, 'edgecolor': 'white'}
-    )
-
+    ax.pie(conteo, labels=conteo.index, autopct='%1.1f%%', startangle=90)
     ax.axis('equal')
-    ax.set_title(f"Distribución: {col}")
-    ax.legend(wedges, categorias_con_conteo, title="Categorías", bbox_to_anchor=(1, 0.5), loc="center left")
     st.pyplot(fig)
 
 # ============================================
-# 📊 DETECCIÓN DE DATOS ATÍPICOS
+# 📊 DETECCIÓN DE ATÍPICOS (Ejemplo Promedio)
 # ============================================
-columnas_continuas = [
-    "Edad en años cumplidos",
-    "Promedio_Num",
-    "Tiempo_desplazamiento_Num",
-    "Tiempo_Num",
-    "Triste_Num"
-]
 
-for col in columnas_continuas:
-    if col not in df.columns:
-        continue
+df["Promedio_Num"] = df["¿Cuál fue tu promedio de calificación del tercer año de bachillerato?"].apply(convertir_rango)
 
-    df[col] = pd.to_numeric(df[col], errors='coerce')
-    datos = df[[col]].dropna()
+col = "Promedio_Num"
+Q1 = df[col].quantile(0.25)
+Q3 = df[col].quantile(0.75)
+IQR = Q3 - Q1
+lower = Q1 - 1.5 * IQR
+upper = Q3 + 1.5 * IQR
+outliers = df[(df[col] < lower) | (df[col] > upper)]
 
-    if datos.empty:
-        continue
-
-    Q1 = datos[col].quantile(0.25)
-    Q3 = datos[col].quantile(0.75)
-    IQR = Q3 - Q1
-    lower = Q1 - 1.5 * IQR
-    upper = Q3 + 1.5 * IQR
-
-    mask_outliers = (df[col] < lower) | (df[col] > upper)
-    outliers_rows = df[mask_outliers]
-
-    st.markdown(f"## 🧩 Área de oportunidad: {col}")
-
-    if not outliers_rows.empty:
-        st.warning(f"⚠️ Se encontraron {len(outliers_rows)} dato(s) atípico(s) en '{col}':")
-        st.dataframe(outliers_rows)
-    else:
-        st.success(f"✅ No se encontraron datos atípicos en '{col}'.")
+st.subheader(f"Datos atípicos en {col}")
+if not outliers.empty:
+    st.warning(outliers)
+else:
+    st.success("✅ No hay datos atípicos detectados.")
