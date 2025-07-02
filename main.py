@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from fpdf import FPDF
 
 # ============================================
-# 📌 CONFIGURACIÓN INICIAL
+# 📌 CONFIG INICIAL
 # ============================================
 st.set_page_config(layout="wide")
 st.title("📊 Reporte gráfico de datos demográficos y áreas de oportunidad")
@@ -18,7 +18,7 @@ st.markdown("""
 """)
 
 # ============================================
-# 📌 CARGA DE DATOS
+# 📌 CARGAR DATOS
 # ============================================
 url = "https://docs.google.com/spreadsheets/d/1LDJFoULKkL5CzjUokGvbFYPeZewMJBAoTGq8i-4XhNY/export?format=csv"
 df = pd.read_csv(url)
@@ -88,7 +88,7 @@ df["Triste_Num"] = df["En las últimas dos semanas ¿Cuántas veces se ha sentid
 # ============================================
 # 📌 DIAGRAMAS DE PASTEL
 # ============================================
-st.header("🥧 Diagramas de Pastel con labels y etiquetas")
+st.header("🥧 Diagramas de Pastel")
 
 columnas_categoricas = [
     "Seleccione su sexo",
@@ -104,10 +104,14 @@ columnas_categoricas = [
 for col in columnas_categoricas:
     if col in df.columns:
         conteo = df[col].value_counts().sort_index()
-        porcentaje = (conteo / conteo.sum()) * 100
+        total = conteo.sum()
 
         labels = [f"{cat}" for cat in conteo.index]
-        autopct = lambda p: f'{p:.1f}%\n({int(round(p * conteo.sum() / 100))} estudiantes)'
+        def autopct(p):
+            count = int(round(p * total / 100))
+            return f'{p:.1f}%\n({count})'
+
+        st.subheader(f"📌 {col}")  # ENCABEZADO ANTES DEL GRÁFICO
 
         fig, ax = plt.subplots(figsize=(6, 6))
         wedges, texts, autotexts = ax.pie(
@@ -158,8 +162,8 @@ if st.button("Generar PDF"):
     pdf.multi_cell(0, 10, "Este PDF es un resumen con:\n"
                           "- Top 13 Municipios + Otros\n"
                           "- Top 4 Bachilleratos + Otros\n"
-                          "Los diagramas de pastel contienen el label de la categoría "
-                          "y dentro cada sector el porcentaje y número de estudiantes.")
+                          "- Diagramas de pastel con labels claros y porcentaje + número de personas.\n"
+                          "- Tabla de datos atípicos por variable numérica.")
 
     pdf.output("reporte_ITColima.pdf")
     st.success("✅ PDF generado como 'reporte_ITColima.pdf'. Descárgalo desde tu carpeta local.")
