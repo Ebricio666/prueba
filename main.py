@@ -86,7 +86,7 @@ df["Horas_Estudio_Num"] = df["¿Cuántas horas al día dedica a estudiar fuera d
 df["Triste_Num"] = df["En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o triste?"].apply(convertir_rango)
 
 # ============================================
-# 📌 DIAGRAMAS DE PASTEL CON LEYENDA TIPO EJEMPLO
+# 📌 DIAGRAMAS DE PASTEL CON LEYENDA LIMPIA
 # ============================================
 st.header("🥧 Diagramas de Pastel")
 
@@ -108,27 +108,31 @@ for col in columnas_categoricas:
         sizes = conteo.values
         categorias = conteo.index.tolist()
 
-        st.subheader(f"📌 {col}")  # ENCABEZADO ANTES DEL GRÁFICO
+        # Título claro antes del gráfico
+        st.subheader(f"📌 {col}")
 
-        fig, ax = plt.subplots(figsize=(6, 6))
+        fig, ax = plt.subplots(figsize=(7, 7))
         wedges, texts, autotexts = ax.pie(
             sizes,
-            labels=None,  # Nada dentro del gráfico
-            autopct='%1.0f%%',
+            labels=None,  # Sin texto dentro
+            autopct='%1.1f%%',
             startangle=90,
+            textprops={'fontsize': 10},
             wedgeprops={'linewidth': 1, 'edgecolor': 'white'}
         )
 
-        ax.set_title(col, fontsize=14)
         ax.axis('equal')
+        ax.set_title(col, fontsize=14)
 
+        # Leyenda con categoría + cantidad
         legend_labels = [f"{cat} ({num})" for cat, num in zip(categorias, sizes)]
         ax.legend(
             wedges,
             legend_labels,
             title="Categorías",
             loc="center left",
-            bbox_to_anchor=(1, 0.5)
+            bbox_to_anchor=(1, 0.5),
+            fontsize=10
         )
 
         st.pyplot(fig)
@@ -170,7 +174,7 @@ if st.button("Generar PDF"):
     pdf.multi_cell(0, 10, "Este PDF es un resumen con:\n"
                           "- Top 13 Municipios + Otros\n"
                           "- Top 4 Bachilleratos + Otros\n"
-                          "- Diagramas de pastel con leyenda tipo ejemplo\n"
+                          "- Diagramas de pastel con título y leyenda.\n"
                           "- Tabla de datos atípicos por variable numérica.")
 
     pdf.output("reporte_ITColima.pdf")
