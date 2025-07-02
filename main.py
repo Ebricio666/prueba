@@ -15,7 +15,7 @@ st.markdown("""
 # ==========================
 # VINCULO GOOGLE SHEETS CSV
 # ==========================
-url = "https://docs.google.com/forms/d/e/1FAIpQLSchnVz-rXEh1IZJa68zfZRt4LkSob6v2wWXfZgYhfIfMyAoHw/viewform?usp=header"  # Reemplaza con tu enlace CSV
+url = "https://docs.google.com/spreadsheets/d/1LDJFoULKkL5CzjUokGvbFYPeZewMJBAoTGq8i-4XhNY/edit?resourcekey&usp=forms_web_b&urp=linked#gid=1826784457"  # Reemplaza con tu enlace CSV
 df = pd.read_csv(url)
 st.success("✅ Datos cargados directamente desde Google Sheets (en tiempo real).")
 st.subheader("📊 Vista previa de los datos")
