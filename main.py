@@ -128,8 +128,7 @@ def convertir_rango_promedio(valor):
     if isinstance(valor, (int, float)): return valor
     if "a" in str(valor):
         partes = str(valor).split("a")
-        try:
-            return (float(partes[0].strip()) + float(partes[1].strip())) / 2
+        try: return (float(partes[0].strip()) + float(partes[1].strip())) / 2
         except: return np.nan
     try: return float(valor)
     except: return np.nan
@@ -142,10 +141,7 @@ def convertir_rango_tiempo(valor):
         return num[0]/2 if num else np.nan
     elif "de" in valor and "a" in valor:
         partes = valor.replace("min", "").split("a")
-        try:
-            minimo = int(partes[0].split()[-1].strip())
-            maximo = int(partes[1].strip())
-            return (minimo + maximo)/2
+        try: return (int(partes[0].split()[-1].strip()) + int(partes[1].strip())) / 2
         except: return np.nan
     else: return np.nan
 
@@ -158,8 +154,7 @@ def convertir_rango_general(valor):
         return num[0]/2 if num else np.nan
     if "a" in valor:
         partes = valor.split("a")
-        try:
-            return (float(partes[0].strip()) + float(partes[1].strip()))/2
+        try: return (float(partes[0].strip()) + float(partes[1].strip())) / 2
         except: return np.nan
     try: return float(valor)
     except: return np.nan
@@ -198,8 +193,10 @@ for col in columnas_categoricas:
 
     st.markdown(f"### 📊 Distribución: {col}")
     conteo = df[col].value_counts().reset_index()
+    conteo.columns = ['Categoria', 'Conteo']  # CORREGIDO
+
     fig, ax = plt.subplots()
-    ax.pie(conteo[col], labels=conteo['index'], autopct='%1.1f%%', startangle=90)
+    ax.pie(conteo['Conteo'], labels=conteo['Categoria'], autopct='%1.1f%%', startangle=90)
     ax.axis('equal')
     st.pyplot(fig)
 
