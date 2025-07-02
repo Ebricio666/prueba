@@ -1,81 +1,83 @@
-# ===============================================
-# 📌 app.py - Reporte gráfico ITColima 2025
-# ===============================================
-
+# ============================================
+# 📌 IMPORTS
+# ============================================
 import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import re
 from fpdf import FPDF
 
-# -----------------------------------------------
-# 📌 CONFIGURACIÓN GENERAL
-# -----------------------------------------------
+# ============================================
+# 📌 CONFIGURACIÓN
+# ============================================
 st.set_page_config(layout="wide")
-st.title("📊 Reporte gráfico de datos demográficos y áreas de oportunidad")
-st.markdown("""
-**Instituto Tecnológico de Colima 2025**  
-**Elaborado por:** Dra. Elena Elsa Bricio-Barrios, Dr. Santiago Arceo-Díaz y Psicóloga Martha Cecilia Ramírez-Guzmán
-""")
 
-# -----------------------------------------------
-# 📌 CARGAR DATOS
-# -----------------------------------------------
+st.title("📊 Reporte gráfico de datos demográficos y áreas de oportunidad")
+st.markdown("**Instituto Tecnológico de Colima 2025**  \n"
+            "**Elaborado por:** Dra. Elena Elsa Bricio-Barrios, Dr. Santiago Arceo-Díaz y Psicóloga Martha Cecilia Ramírez-Guzmán")
+
+# ============================================
+# 📌 CARGAR DATOS DESDE GOOGLE SHEETS
+# ============================================
 url = "https://docs.google.com/spreadsheets/d/1LDJFoULKkL5CzjUokGvbFYPeZewMJBAoTGq8i-4XhNY/export?format=csv"
 df = pd.read_csv(url)
-st.success("✅ Datos cargados desde Google Sheets")
+
+st.success("✅ Datos cargados correctamente")
 st.dataframe(df.head())
 
-# -----------------------------------------------
-# 📌 AGRUPAR MUNICIPIOS
-# -----------------------------------------------
-def agrupar_municipio(valor):
-    valor = str(valor).lower().strip()
-    if "villa" in valor:
+# ============================================
+# 📌 AGRUPACIÓN MUNICIPIO
+# ============================================
+def agrupar_municipio(x):
+    x = str(x).lower().strip()
+    if "villa" in x:
         return "Villa de Álvarez"
-    elif "col" in valor:
+    elif "colima" in x:
         return "Colima"
-    elif "cuau" in valor:
-        return "Cuauhtémoc"
-    elif "comala" in valor:
-        return "Comala"
-    elif "manzanillo" in valor:
+    elif "manzanillo" in x:
         return "Manzanillo"
-    elif "tecoman" in valor:
-        return "Tecomán"
-    elif "coquimat" in valor:
+    elif "comala" in x:
+        return "Comala"
+    elif "coquimatlan" in x:
         return "Coquimatlán"
-    elif "aquila" in valor:
-        return "Aquila"
-    elif "tonila" in valor:
+    elif "cuauhtemoc" in x or "cuahutemoc" in x:
+        return "Cuauhtémoc"
+    elif "tecoman" in x:
+        return "Tecomán"
+    elif "tonila" in x:
         return "Tonila"
+    elif "aquila" in x:
+        return "Aquila"
     else:
-        return valor.title()
+        return "Otro"
 
 df["Municipio Agrupado"] = df["Municipio donde vive actualmente"].apply(agrupar_municipio)
 
-# -----------------------------------------------
-# 📌 AGRUPAR BACHILLERATO DE PROCEDENCIA
-# -----------------------------------------------
-def agrupar_bachillerato(valor):
-    valor = str(valor).lower().strip()
-    if "u de colima" in valor or "universidad de colima" in valor:
-        return "Bachillerato U de Colima"
-    elif "cetis" in valor or "cbtis" in valor or "cobaem" in valor or "cbta" in valor or "tele" in valor or "emsad" in valor:
-        return "Bachillerato Tecnológico / Telebachillerato"
-    elif "isenco" in valor:
+# ============================================
+# 📌 AGRUPACIÓN BACHILLERATO
+# ============================================
+def agrupar_bachillerato(x):
+    x = str(x).lower()
+    if "universidad de colima" in x:
+        return "Bachillerato U de C"
+    elif "cbtis" in x or "cety" in x or "cetis" in x:
+        return "Bachillerato Profesionalizante (CBTIS/CETIS)"
+    elif "isenco" in x:
         return "ISENCO"
-    elif "privada" in valor or "tec de monterrey" in valor or "anahuac" in valor or "vizcaya" in valor:
+    elif "preparatoria regional" in x or "udg" in x:
+        return "Preparatoria Regional UdeG"
+    elif "telebachillerato" in x or "emsad" in x:
+        return "Telebachillerato/EMSAD"
+    elif "privada" in x or "tec de monterrey" in x or "univa" in x or "josé martí" in x:
         return "Universidad Privada"
     else:
-        return valor.title()
+        return "Otro"
 
 df["Bachillerato Agrupado"] = df["¿De qué institución académica egresaste?"].apply(agrupar_bachillerato)
 
-# -----------------------------------------------
-# 📌 CONVERSIÓN DE RANGOS
-# -----------------------------------------------
+# ============================================
+# 📌 FUNCIONES DE CONVERSIÓN DE RANGOS
+# ============================================
 def convertir_rango(valor):
     if pd.isna(valor):
         return np.nan
@@ -83,53 +85,34 @@ def convertir_rango(valor):
     if "más de" in valor or "mayor" in valor:
         return 23
     if "menos de" in valor:
-        nums = re.findall(r'\d+\.?\d*', valor)
-        return float(nums[0])/2 if nums else np.nan
+        return 1
     if "a" in valor:
-        nums = re.findall(r'\d+\.?\d*', valor)
-        if len(nums) >= 2:
-            minimo = float(nums[0])
-            maximo = float(nums[1])
+        partes = valor.replace("min", "").split("a")
+        try:
+            minimo = float(partes[0].strip())
+            maximo = float(partes[1].strip())
             return (minimo + maximo) / 2
-        else:
+        except:
             return np.nan
-    nums = re.findall(r'\d+\.?\d*', valor)
-    return float(nums[0]) if nums else np.nan
+    try:
+        return float(valor)
+    except:
+        return np.nan
 
+# ============================================
+# 📌 APLICAR CONVERSIONES
+# ============================================
 df["Edad_Num"] = df["Edad en años cumplidos"].apply(convertir_rango)
 df["Desplazamiento_Num"] = df["¿Cuánto tiempo le toma desplazarse a pie o vehículo público o privado del lugar donde vive a esta Institución Académica?"].apply(convertir_rango)
 df["Promedio_Num"] = df["¿Cuál fue tu promedio de calificación del tercer año de bachillerato?"].apply(convertir_rango)
 df["Horas_Estudio_Num"] = df["¿Cuántas horas al día dedica a estudiar fuera del aula?"].apply(convertir_rango)
 df["Triste_Num"] = df["En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o triste?"].apply(convertir_rango)
 
-# -----------------------------------------------
-# 📌 DETECTAR OUTLIERS
-# -----------------------------------------------
-def detectar_outliers(df, col):
-    datos = df[col].dropna()
-    Q1 = datos.quantile(0.25)
-    Q3 = datos.quantile(0.75)
-    IQR = Q3 - Q1
-    lower = Q1 - 1.5 * IQR
-    upper = Q3 + 1.5 * IQR
-    outliers = df[(df[col] < lower) | (df[col] > upper)]
-    return outliers, lower, upper
-
-st.subheader("🔎 Datos Atípicos")
-columnas = ["Edad_Num", "Desplazamiento_Num", "Promedio_Num", "Horas_Estudio_Num", "Triste_Num"]
-outliers_total = pd.DataFrame()
-
-for col in columnas:
-    outliers, lower, upper = detectar_outliers(df, col)
-    st.write(f"**{col}**: rango aceptable [{lower:.2f}, {upper:.2f}]")
-    if not outliers.empty:
-        st.dataframe(outliers)
-        outliers_total = pd.concat([outliers_total, outliers])
-
-# -----------------------------------------------
+# ============================================
 # 📌 GRÁFICAS DE PASTEL
-# -----------------------------------------------
-st.subheader("🥧 Diagramas de Pastel")
+# ============================================
+st.header("🥧 Diagramas de Pastel")
+
 columnas_categoricas = [
     "Seleccione su sexo",
     "¿A qué carrera desea ingresar?",
@@ -144,28 +127,52 @@ columnas_categoricas = [
 for col in columnas_categoricas:
     if col in df.columns:
         conteo = df[col].value_counts()
+        porcentaje = (conteo / conteo.sum()) * 100
+
+        labels = [f"{cat} ({conteo[cat]}) - {porcentaje[cat]:.1f}%" for cat in conteo.index]
+
         fig, ax = plt.subplots()
-        ax.pie(conteo, labels=conteo.index, autopct='%1.1f%%', startangle=90)
+        wedges, texts = ax.pie(conteo, labels=labels, startangle=90)
         ax.axis('equal')
+        ax.set_title(f"Distribución: {col}")
         st.pyplot(fig)
 
-# -----------------------------------------------
-# 📌 BOTÓN EXPORTAR A PDF
-# -----------------------------------------------
-if st.button("📄 Exportar Reporte PDF"):
+# ============================================
+# 📌 DATOS ATÍPICOS
+# ============================================
+st.header("📊 Detección de Datos Atípicos")
+
+columnas_numericas = ["Edad_Num", "Desplazamiento_Num", "Promedio_Num", "Horas_Estudio_Num", "Triste_Num"]
+
+for col in columnas_numericas:
+    datos = df[col].dropna()
+    Q1 = datos.quantile(0.25)
+    Q3 = datos.quantile(0.75)
+    IQR = Q3 - Q1
+    lower = Q1 - 1.5 * IQR
+    upper = Q3 + 1.5 * IQR
+
+    outliers = df[(df[col] < lower) | (df[col] > upper)]
+
+    st.subheader(f"Datos Atípicos: {col}")
+    if not outliers.empty:
+        st.dataframe(outliers)
+    else:
+        st.success(f"No se encontraron datos atípicos en {col}")
+
+# ============================================
+# 📌 EXPORTAR A PDF (opcional básico)
+# ============================================
+st.header("📄 Exportar PDF")
+
+if st.button("Generar PDF"):
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Arial", "B", 14)
-    pdf.cell(0, 10, "Reporte gráfico ITColima 2025", ln=True)
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt="📊 Reporte ITColima 2025", ln=True, align='C')
 
-    pdf.set_font("Arial", "", 12)
-    pdf.multi_cell(0, 10, "Datos atípicos detectados:\n")
-    for col in columnas:
-        outliers, _, _ = detectar_outliers(df, col)
-        if not outliers.empty:
-            pdf.cell(0, 8, f"{col}:", ln=True)
-            for index, row in outliers.iterrows():
-                pdf.cell(0, 8, f" - Fila {index+1}: {row[col]}", ln=True)
+    pdf.multi_cell(0, 10, "Este reporte contiene agrupación de municipios y bachilleratos, diagramas de pastel con conteos y porcentajes, "
+                          "y tablas de detección de datos atípicos.\n\nPara visualizar gráficos completos, consulte el archivo original o app online.")
 
     pdf.output("reporte_ITColima.pdf")
-    st.success("✅ Reporte PDF generado: **reporte_ITColima.pdf**")
+    st.success("✅ PDF generado y guardado como 'reporte_ITColima.pdf'. Descárgalo desde tu carpeta local.")
