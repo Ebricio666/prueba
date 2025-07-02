@@ -2,22 +2,24 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
-# Configuración general
 st.set_page_config(layout="wide")
 
+# ==========================
+# TÍTULO E INFORMACIÓN
+# ==========================
 st.markdown("""
 # Reporte gráfico de datos demográficos y áreas de oportunidad de los aspirantes al ingreso a las diversas carreras del Instituto Tecnológico de Colima 2025  
 **Elaborado por:** Dra. Elena Elsa Bricio-Barrios, Dr. Santiago Arceo-Díaz y Psicóloga Martha Cecilia Ramírez-Guzmán
 """)
 
 # ==========================
-# VÍNCULO A GOOGLE SHEETS PUBLICADO COMO CSV
+# LEER CSV EN LÍNEA
 # ==========================
-url = "https://docs.google.com/spreadsheets/d/e/1FAIpQLSchnVz-rXEh1IZJa68zfZRt4LkSob6v2wWXfZgYhfIfMyAoHw/pub?output=csv"  # ⚠️ Cambia aquí por tu enlace publicado correctamente
+url = "https://docs.google.com/spreadsheets/d/1LDJFoULKkL5CzjUokGvbFYPeZewMJBAoTGq8i-4XhNY/export?format=csv"
 df = pd.read_csv(url)
-st.success("✅ Datos cargados directamente desde Google Sheets (en tiempo real).")
+
+st.success("✅ Datos cargados directamente desde Google Sheets.")
 st.subheader("📊 Vista previa de los datos")
 st.dataframe(df)
 
@@ -62,101 +64,26 @@ else:
     st.success("✅ Todos los encabezados esperados están presentes.")
 
 # ==========================
-# FUNCIONES DE CONVERSIÓN
+# EJEMPLO: CONVERSIÓN DE EDAD
 # ==========================
 def convertir_edad(valor):
     if pd.isna(valor):
         return np.nan
     valor = str(valor).lower().strip()
     if "más de" in valor or "mas de" in valor:
-        return 23  # Ajusta este valor a tu criterio
+        return 23
     try:
         return float(valor)
     except:
         return np.nan
 
-def convertir_rango_promedio(valor):
-    if pd.isna(valor):
-        return np.nan
-    if isinstance(valor, (int, float)):
-        return valor
-    if "a" in str(valor):
-        partes = str(valor).split("a")
-        try:
-            minimo = float(partes[0].strip())
-            maximo = float(partes[1].strip())
-            return (minimo + maximo) / 2
-        except:
-            return np.nan
-    try:
-        return float(valor)
-    except:
-        return np.nan
-
-def convertir_rango_tiempo_desplazamiento(valor):
-    if pd.isna(valor):
-        return np.nan
-    valor = str(valor).lower()
-    if "menos de" in valor:
-        try:
-            num = [int(s) for s in valor.split() if s.isdigit()][0]
-            return num / 2
-        except:
-            return np.nan
-    elif "de" in valor and "a" in valor:
-        partes = valor.replace("min", "").split("a")
-        try:
-            minimo = int(partes[0].split()[-1].strip())
-            maximo = int(partes[1].strip())
-            return (minimo + maximo) / 2
-        except:
-            return np.nan
-    else:
-        return np.nan
-
-def convertir_rango_general(valor):
-    if pd.isna(valor):
-        return np.nan
-    valor = str(valor).lower()
-    if "ninguna" in valor:
-        return 0
-    if "menos de" in valor:
-        try:
-            num = [float(s) for s in valor.split() if s.replace('.', '', 1).isdigit()][0]
-            return num / 2
-        except:
-            return np.nan
-    if "a" in valor:
-        partes = valor.split("a")
-        try:
-            minimo = float(partes[0].strip())
-            maximo = float(partes[1].split()[0].strip())
-            return (minimo + maximo) / 2
-        except:
-            return np.nan
-    try:
-        return float(valor)
-    except:
-        return np.nan
-
-# ==========================
-# APLICAR CONVERSIONES
-# ==========================
 if "Edad en años cumplidos" in df.columns:
     df["Edad en años cumplidos"] = df["Edad en años cumplidos"].apply(convertir_edad)
 
-if "¿Cuál fue tu promedio de calificación del tercer año de bachillerato?" in df.columns:
-    df["Promedio_Num"] = df["¿Cuál fue tu promedio de calificación del tercer año de bachillerato?"].apply(convertir_rango_promedio)
-
-if "¿Cuánto tiempo le toma desplazarse a pie o vehículo público o privado del lugar donde vive a esta Institución Académica?" in df.columns:
-    df["Tiempo_desplazamiento_Num"] = df["¿Cuánto tiempo le toma desplazarse a pie o vehículo público o privado del lugar donde vive a esta Institución Académica?"].apply(convertir_rango_tiempo_desplazamiento)
-
-if "¿Cuántas horas al día dedica a estudiar fuera del aula?" in df.columns:
-    df["Tiempo_Num"] = df["¿Cuántas horas al día dedica a estudiar fuera del aula?"].apply(convertir_rango_general)
-
-if "En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o triste?" in df.columns:
-    df["Triste_Num"] = df["En las últimas dos semanas ¿Cuántas veces se ha sentido desmotivado o triste?"].apply(convertir_rango_general)
+st.subheader("📊 Datos con conversión de edad")
+st.dataframe(df)
 
 # ==========================
-# Continúa con tu bloque de análisis...
+# CONTINÚA CON TU ANÁLISIS AQUÍ
 # ==========================
+# Puedes seguir con tus diagramas, boxplots, etc.
