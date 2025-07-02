@@ -1,4 +1,4 @@
-# 📊 app.py para Streamlit
+# 📊 ANALÍTICA STREAMLIT COMPLETA
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -12,13 +12,14 @@ st.markdown("""
 **Elaborado por:** Dra. Elena Elsa Bricio-Barrios, Dr. Santiago Arceo-Díaz y Psicóloga Martha Cecilia Ramírez-Guzmán
 """)
 
-# ✅ 1️⃣ URL PÚBLICO CSV
-url = "https://docs.google.com/spreadsheets/d/e/TU_ID/pub?output=csv"  # Reemplaza TU_ID
+# ✅ 1️⃣ Enlace PÚBLICO CORRECTO
+url = "https://docs.google.com/spreadsheets/d/1LDJFoULKkL5CzjUokGvbFYPeZewMJBAoTGq8i-4XhNY/edit?usp=sharing"
 df = pd.read_csv(url)
+
 st.success(f"✅ Datos cargados: {df.shape[0]} registros")
 st.dataframe(df.head())
 
-# ✅ 2️⃣ Normalización de MUNICIPIO e INSTITUCIÓN
+# ✅ 2️⃣ Normaliza MUNICIPIO e INSTITUCIÓN
 def normalizar_institucion(v):
     v = str(v).lower()
     if "colima" in v: return "Universidad de Colima"
